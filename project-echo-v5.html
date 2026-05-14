@@ -194,6 +194,7 @@ p   { font-size:clamp(14px,1.5vw,17px);color:var(--muted);line-height:1.7; }
 .tmpl-prev { background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.2);border-radius:9px;padding:13px 15px;font-size:12.5px;color:var(--muted);line-height:1.7;margin-top:10px; }
 .tmpl-prev .hl { color:var(--blue);font-weight:600; }
 .dl-btn { display:inline-flex;align-items:center;gap:8px;background:var(--teal);color:#000;padding:10px 22px;border-radius:8px;font-size:13px;font-weight:800;cursor:pointer;margin-top:12px;border:none;width:100%;justify-content:center; }
+.sel-ctrl { background:var(--card2);border:1px solid rgba(255,255,255,.15);border-radius:5px;padding:3px 7px;color:var(--text);font-size:10.5px;outline:none;cursor:pointer;max-width:158px; }
 </style>
 </head>
 <body>
@@ -359,20 +360,29 @@ p   { font-size:clamp(14px,1.5vw,17px);color:var(--muted);line-height:1.7; }
         <div class="w-row" style="color:var(--gold);"><span>⚡</span><div><strong>Clause 7.1</strong>: add discount duration — <em>"25% applies to Year 1 only; standard rate from Year 2 unless agreed in writing"</em></div></div>
         <div class="w-row" style="color:var(--green);"><span>✅</span><span>Service description — complete</span></div>
         <div class="w-row" style="color:var(--green);"><span>✅</span><span>Payment structure — present</span></div>
-        <div class="w-row" style="color:var(--green);"><span>✅</span><span>Echo contract clause drafted and ready</span></div>
+        <div class="w-row" style="color:var(--green);"><span>✅</span><span>Echo contract clause drafted and ready to download</span></div>
+        <button onclick="openModal('sales')" style="background:var(--blue);color:#000;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:10.5px;font-weight:800;width:100%;margin-top:7px;display:flex;align-items:center;justify-content:center;gap:5px;">⬇ Download Updated Clauses</button>
       </div>
     </div>
     <div class="col-panel">
       <div class="col-head vio">Echo Drafts</div>
       <div class="col-body" style="padding:10px 12px;">
-        <div style="font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--teal);font-weight:700;margin-bottom:6px;">Confirmation Email</div>
-        <div style="background:var(--card2);border-radius:6px;padding:9px 11px;font-size:11.5px;color:var(--text);line-height:1.65;margin-bottom:10px;">
-          "...The introductory rate of <span style="color:var(--teal);font-weight:700;">£1.969/life</span> reflects a <span style="color:var(--teal);">25% Year 1 education discount</span>. This applies to Year 1 only. Standard pricing applies from renewal unless agreed in writing..."
+        <div style="font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--teal);font-weight:700;margin-bottom:5px;">Confirmation Email</div>
+        <div style="background:var(--card2);border-radius:6px;padding:9px 11px;font-size:10.5px;color:var(--text);line-height:1.6;margin-bottom:8px;max-height:130px;overflow-y:auto;">
+          Dear {Name},<br><br>
+          Thank you for choosing TalkLife — I'm pleased to confirm your subscription details for ELTE Budapest.<br><br>
+          Your agreement covers <span style="color:var(--teal);font-weight:600;">8,500 covered lives</span> from <strong>1 Sep 2026</strong>, at an introductory rate of <span style="color:var(--teal);font-weight:700;">£1.969 per life</span>, reflecting a <span style="color:var(--gold);">25% education sector discount for Year 1 only.</span><br><br>
+          Annual value: <span style="color:var(--teal);font-weight:700;">£16,737</span>, invoiced annually in advance. From Year 2, the standard rate of <strong>£2.625 per life</strong> applies unless otherwise agreed in writing before renewal.<br><br>
+          The formal agreement is attached for your signature. Please don't hesitate to reach out with any questions.<br><br>
+          Warm regards,<br>[Your name] · TalkLife
         </div>
-        <div style="font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--vio);font-weight:700;margin-bottom:6px;">Contract Clause — Clause 2</div>
-        <div style="background:var(--card2);border-radius:6px;padding:9px 11px;font-size:11px;color:var(--muted);line-height:1.6;">
-          "2.2 For the Initial Subscription Term only, a 25% education sector discount applies... 2.3 The discount expires at end of Initial Term. Standard rate applies from Year 2 unless otherwise agreed in writing. 2.4 Annual uplift: RPI+2%, 60 days notice."
+        <div style="font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--vio);font-weight:700;margin-bottom:5px;">Contract Clause — Clause 2</div>
+        <div style="background:var(--card2);border-radius:6px;padding:9px 11px;font-size:10.5px;color:var(--muted);line-height:1.6;max-height:105px;overflow-y:auto;">
+          <strong style="color:var(--vio);">2.2</strong> For the Initial Subscription Term commencing 1 September 2026, a 25% education sector discount is applied to the standard rate of £2.625 per covered life, giving an effective rate of £1.969 per life for 8,500 covered lives. Annual contract value: £16,737, payable annually in advance.<br><br>
+          <strong style="color:var(--vio);">2.3</strong> This discount applies to the Initial Subscription Term only and expires at the end of that term. Standard pricing of £2.625 per life applies from Year 2 unless separately agreed in writing prior to renewal.<br><br>
+          <strong style="color:var(--vio);">2.4</strong> Annual uplift of RPI+2% applies from Year 2, with 60 days' written notice.
         </div>
+        <button onclick="openModal('sales')" style="background:var(--blue);color:#000;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:10.5px;font-weight:800;width:100%;margin-top:7px;display:flex;align-items:center;justify-content:center;gap:5px;">⬇ Download Contract Clause</button>
       </div>
     </div>
   </div>
@@ -402,7 +412,19 @@ p   { font-size:clamp(14px,1.5vw,17px);color:var(--muted);line-height:1.7; }
           <div class="erow"><span class="lbl">Standard rate</span><span class="val">£2.625 / life</span></div>
           <div class="erow"><span class="lbl">Renewal range</span><span class="val green">£2.35 – £2.50</span></div>
           <div class="erow"><span class="lbl">Uplift opportunity</span><span class="val green">+£12,400 ARR</span></div>
-          <div class="erow"><span class="lbl">Renewal term</span><span class="val" style="font-size:12px;">Mutual agreement — confirm in writing</span></div>
+          <div class="erow" style="align-items:flex-start;padding:7px 0;"><span class="lbl" style="padding-top:3px;">Renewal term</span>
+            <select id="renewal-type" onchange="updateRenewal()" class="sel-ctrl">
+              <option value="mutual">Mutual agreement</option>
+              <option value="auto">Auto-renew</option>
+              <option value="fixed">Fixed term</option>
+            </select>
+          </div>
+          <div class="erow" style="align-items:flex-start;padding:7px 0;border-bottom:none;"><span class="lbl" style="padding-top:3px;">Discount duration</span>
+            <select id="disc-type" onchange="calc()" class="sel-ctrl">
+              <option value="year1">Year 1 only</option>
+              <option value="ongoing">Ongoing / undocumented</option>
+            </select>
+          </div>
         </div>
       </div>
       <div class="col-panel">
@@ -410,7 +432,7 @@ p   { font-size:clamp(14px,1.5vw,17px);color:var(--muted);line-height:1.7; }
         <div class="col-body" style="padding:9px 12px;">
           <div class="flag"><span>⚡</span><span>Opportunity: formally document discount expiry date for full commercial clarity</span></div>
           <div class="flag"><span>⚡</span><span>Strengthen position: add price uplift mechanism to contract for future renewals</span></div>
-          <div class="flag info"><span>ℹ️</span><span>Mutual agreement clause: written confirmation from both parties recommended</span></div>
+          <div class="flag info" id="renewal-flag"><span>ℹ️</span><span id="renewal-rec">Mutual agreement: written confirmation required from both parties. Pricing changes require a signed variation for strongest legal protection.</span></div>
           <div class="flag ok"><span>✅</span><span>Customer sentiment: cooperative — 3 positive email responses in 90 days</span></div>
           <div style="margin-top:10px;">
             <div class="etitle" style="color:var(--gold);">AI Confidence</div>
@@ -447,7 +469,7 @@ p   { font-size:clamp(14px,1.5vw,17px);color:var(--muted);line-height:1.7; }
           </div>
           <div id="echo-guidance" style="border-radius:7px;padding:8px 10px;font-size:11.5px;line-height:1.55;"></div>
           <div id="vt" style="display:none;margin-top:8px;">
-            <button onclick="openModal()" style="background:var(--teal);color:#000;border:none;padding:7px 14px;border-radius:7px;cursor:pointer;font-size:11.5px;font-weight:800;width:100%;">📋 Generate Variation</button>
+            <button onclick="openModal('renewal')" style="background:var(--teal);color:#000;border:none;padding:7px 14px;border-radius:7px;cursor:pointer;font-size:11.5px;font-weight:800;width:100%;">📋 Generate Variation + Email</button>
           </div>
         </div>
       </div>
@@ -549,23 +571,29 @@ p   { font-size:clamp(14px,1.5vw,17px);color:var(--muted);line-height:1.7; }
 <!-- ── VARIATION MODAL ── -->
 <div id="var-modal">
   <div class="modal-box">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
       <div>
-        <div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--teal);font-weight:700;margin-bottom:6px;">Echo · Variation Required</div>
-        <h3>Generate Contract Variation</h3>
+        <div id="modal-label" style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--teal);font-weight:700;margin-bottom:5px;">Echo · Variation Required</div>
+        <h3 id="modal-title">Generate Contract Variation &amp; Email</h3>
       </div>
       <button class="modal-close" onclick="closeModal()">✕ Close</button>
     </div>
-    <p style="font-size:13.5px;color:var(--muted);margin-bottom:18px;">Upload the client's existing contract and your company template. Echo completes the required fields and prepares the document for signature.</p>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
-      <div class="upload-zone"><div style="font-size:26px;">📄</div><div style="font-size:13px;font-weight:700;color:var(--teal);margin-top:6px;">Client Contract</div><p>Upload existing signed agreement</p></div>
-      <div class="upload-zone"><div style="font-size:26px;">📋</div><div style="font-size:13px;font-weight:700;color:var(--teal);margin-top:6px;">Company Template</div><p>Upload your variation agreement template</p></div>
+    <p id="modal-desc" style="font-size:13px;color:var(--muted);margin-bottom:14px;">Upload the client's existing contract and your company template. Echo prepares the full variation clause and renewal email — ready to send.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+      <div class="upload-zone"><div style="font-size:24px;">📄</div><div style="font-size:12px;font-weight:700;color:var(--teal);margin-top:5px;">Client Contract</div><p>Upload existing signed agreement</p></div>
+      <div class="upload-zone"><div style="font-size:24px;">📋</div><div style="font-size:12px;font-weight:700;color:var(--teal);margin-top:5px;">Company Template</div><p>Upload your variation agreement template</p></div>
     </div>
-    <div class="tmpl-prev">
-      <div style="font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--blue);margin-bottom:8px;font-weight:700;">Echo — Generated Variation</div>
-      "This Variation Agreement amends the Service Agreement between TalkLife Ltd and <span class="hl">University of Passau</span>. With effect from <span class="hl">1 July 2026</span>, the price per covered life is revised to <span class="hl" id="m-rate">£2.500</span>. All previously agreed temporary discounts are confirmed as expired. All other terms of the original Agreement remain in full force."
+    <div class="tmpl-prev" style="margin-bottom:10px;">
+      <div style="font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--vio);margin-bottom:7px;font-weight:700;">Echo — Updated Contract Clause</div>
+      <div id="modal-clause" style="font-size:12.5px;color:var(--muted);line-height:1.7;"></div>
     </div>
-    <button class="dl-btn">⬇ Download for Signature</button>
+    <div id="modal-email-section" style="display:none;margin-bottom:10px;">
+      <div class="tmpl-prev">
+        <div style="font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--teal);margin-bottom:7px;font-weight:700;">Echo — Email Draft</div>
+        <div id="modal-email" style="font-size:12.5px;color:var(--muted);line-height:1.75;"></div>
+      </div>
+    </div>
+    <button class="dl-btn" id="modal-dl-btn">⬇ Download for Signature</button>
   </div>
 </div>
 
@@ -598,21 +626,55 @@ let tx=0;
 document.addEventListener('touchstart', e => { tx=e.touches[0].clientX; });
 document.addEventListener('touchend',   e => { const d=e.changedTouches[0].clientX-tx; if(Math.abs(d)>50) go(d<0?1:-1); });
 
-function openModal() {
-  const r = parseFloat(document.getElementById('inp-ppl').value)||2.5;
-  document.getElementById('m-rate').textContent = '£'+r.toFixed(3);
+function fmt(n)  { return '£'+n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,','); }
+function fmtP(n) { return '£'+n.toFixed(3); }
+function adj(d)  { const el=document.getElementById('inp-disc'); el.value=Math.max(0,Math.min(100,(parseFloat(el.value)||0)+d)); calc(); }
+
+function openModal(mode) {
+  const r     = parseFloat(document.getElementById('inp-ppl').value)||2.5;
+  const lives = parseInt(document.getElementById('inp-lives').value)||18400;
+  const disc  = parseFloat(document.getElementById('inp-disc').value)||0;
+  const net   = r * lives * (1 - disc/100);
+  if (mode === 'sales') {
+    document.getElementById('modal-label').textContent = 'Echo · Sales Mode';
+    document.getElementById('modal-title').textContent = 'Download Updated Contract Clauses';
+    document.getElementById('modal-desc').textContent  = 'Echo has identified clauses that need updating before this agreement is sent. Upload the draft contract and company template — Echo prepares the corrected version ready to issue.';
+    document.getElementById('modal-clause').innerHTML  =
+      '<strong style="color:var(--vio)">2.2</strong> For the Initial Subscription Term commencing 1 September 2026, a 25% education sector discount is applied to the standard rate of £2.625 per covered life, giving an effective rate of £1.969 per life for 8,500 covered lives. Annual contract value: £16,737, payable annually in advance.<br><br>' +
+      '<strong style="color:var(--vio)">2.3</strong> This discount applies to the Initial Subscription Term only and expires at end of that term. Standard pricing of £2.625 per life applies from Year 2 unless separately agreed in writing prior to renewal.<br><br>' +
+      '<strong style="color:var(--vio)">2.4</strong> Annual uplift of RPI+2% applies from Year 2, with 60 days\' written notice.';
+    document.getElementById('modal-email-section').style.display = 'none';
+    document.getElementById('modal-dl-btn').textContent = '⬇ Download Updated Clauses';
+  } else {
+    document.getElementById('modal-label').textContent = 'Echo · Variation Required';
+    document.getElementById('modal-title').textContent = 'Generate Contract Variation & Email';
+    document.getElementById('modal-desc').textContent  = 'Upload the client\'s existing contract and your company template. Echo prepares the full variation clause and a ready-to-send renewal email.';
+    document.getElementById('modal-clause').innerHTML  =
+      'This Variation Agreement amends the Service Agreement between TalkLife Ltd and <span class="hl">University of Passau</span>. With effect from <span class="hl">1 July 2026</span>, the price per covered life is revised to <span class="hl">'+fmtP(r)+'</span>, and covered lives are confirmed at <span class="hl">'+lives.toLocaleString()+'</span>. Annual contract value: <span class="hl">'+fmt(net)+'</span>. All previously agreed temporary discounts are confirmed as expired. All other terms of the original Agreement remain in full force.';
+    document.getElementById('modal-email').innerHTML   =
+      'Dear {Name},<br><br>Thank you for your continued partnership with TalkLife. I\'m pleased to confirm the updated terms for the University of Passau subscription, effective <strong>1 July 2026</strong>.<br><br>' +
+      'Your updated agreement is as follows:<br>' +
+      '— Covered lives: <span style="color:var(--teal);font-weight:600;">'+lives.toLocaleString()+'</span><br>' +
+      '— Rate per life: <span style="color:var(--teal);font-weight:600;">'+fmtP(r)+'</span><br>' +
+      (disc > 0 ? '— Discount applied: <span style="color:var(--gold);font-weight:600;">'+disc+'%</span><br>' : '') +
+      '— Annual value: <span style="color:var(--teal);font-weight:600;">'+fmt(net)+'</span><br><br>' +
+      'Please find attached the formal variation agreement for your signature. All other contract terms remain unchanged.<br><br>Warm regards,<br>[Your name] · TalkLife';
+    document.getElementById('modal-email-section').style.display = 'block';
+    document.getElementById('modal-dl-btn').textContent = '⬇ Download Variation + Email';
+  }
   document.getElementById('var-modal').classList.add('open');
 }
 function closeModal() { document.getElementById('var-modal').classList.remove('open'); }
 
-function fmt(n)    { return '£'+n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,','); }
-function fmtP(n)   { return '£'+n.toFixed(3); }
-function adj(d)    { const el=document.getElementById('inp-disc'); el.value=Math.max(0,Math.min(100,(parseFloat(el.value)||0)+d)); calc(); }
+/* Contract baseline — any deviation triggers a variation suggestion */
+const CONTRACT = { rate: 2.10, lives: 18400, disc: 20 };
 
 function calc() {
   const ppl   = parseFloat(document.getElementById('inp-ppl').value)   || 0;
   const lives = parseInt(document.getElementById('inp-lives').value)    || 0;
   const disc  = parseFloat(document.getElementById('inp-disc').value)   || 0;
+  const dtEl  = document.getElementById('disc-type');
+  const discType = dtEl ? dtEl.value : 'year1';
   const gross = ppl*lives, discAmt=gross*disc/100, net=gross-discAmt, mo=net/12;
   document.getElementById('inv-gv').textContent  = fmt(gross);
   document.getElementById('inv-tot').textContent = fmt(net);
@@ -621,16 +683,56 @@ function calc() {
   const dl=document.getElementById('inv-dl');
   if(disc>0){dl.style.display='flex';document.getElementById('inv-ll').textContent='Discount ('+disc+'%)';document.getElementById('inv-lv').textContent='-'+fmt(discAmt);}
   else dl.style.display='none';
-  const g=document.getElementById('echo-guidance'),vt=document.getElementById('vt');
-  if(disc===0){g.style.cssText='background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.25);color:#34d399;';g.textContent='Standard rate. Invoice reflects full pricing, no deduction required.';vt.style.display='none';}
-  else if(disc<=10){g.style.cssText='background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:#8894ae;';g.textContent='Commercially sound. Document rationale in renewal email. Variation recommended if different from original contract.';vt.style.display='none';}
-  else if(disc<=20){g.style.cssText='background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);color:#f59e0b;';g.textContent='Moderate discount. Confirm duration explicitly. A signed variation agreement is recommended to formalise updated terms.';vt.style.display='block';}
-  else{g.style.cssText='background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);color:#f87171;';g.textContent='Discount above 20% — a formal rationale is required. Contract variation needed. Use the button below to generate it now.';vt.style.display='block';}
+
+  const rateChanged  = Math.abs(ppl - CONTRACT.rate) > 0.005;
+  const livesChanged = lives !== CONTRACT.lives;
+  const discChanged  = Math.abs(disc - CONTRACT.disc) > 0.1;
+  const discUncertain = discType === 'ongoing';
+  const needsVariation = rateChanged || livesChanged || discChanged || discUncertain;
+
+  const g=document.getElementById('echo-guidance'), vt=document.getElementById('vt');
+  if (!needsVariation) {
+    g.style.cssText='background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.25);color:#34d399;';
+    g.textContent='Terms match the contract. Invoice is ready to issue — no variation required.';
+    vt.style.display='none';
+  } else if (discUncertain) {
+    g.style.cssText='background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);color:#f87171;';
+    g.textContent='⚠️ Discount duration is undocumented — the customer may consider 20% their standard rate. Any pricing increase will be perceived as a contract change. A formal variation is strongly recommended to protect the right to uplift at renewal.';
+    vt.style.display='block';
+  } else if (rateChanged || discChanged) {
+    if (disc > 25 || ppl > CONTRACT.rate * 1.15) {
+      g.style.cssText='background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);color:#f87171;';
+      g.textContent='Significant pricing change from contract — a formal variation agreement is required. Generate it below.';
+    } else {
+      g.style.cssText='background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);color:#f59e0b;';
+      g.textContent='Pricing differs from the current contract. A signed variation is recommended to formally document the updated terms.';
+    }
+    vt.style.display='block';
+  } else if (livesChanged) {
+    g.style.cssText='background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);color:#f59e0b;';
+    g.textContent='Lives count has changed from the contract figure. Confirm in the renewal email and issue a variation to update the covered lives.';
+    vt.style.display='block';
+  }
+}
+
+function updateRenewal() {
+  const typeEl  = document.getElementById('renewal-type');
+  const flagEl  = document.getElementById('renewal-flag');
+  if (!typeEl || !flagEl) return;
+  const m = {
+    mutual:{ cls:'info', icon:'ℹ️', txt:'Mutual agreement: written confirmation required from both parties. Email or formal letter recommended. Any pricing change requires a signed variation for strongest legal protection.' },
+    auto:  { cls:'ok',   icon:'✅', txt:'Auto-renew: contract rolls over automatically unless the customer terminates with 30 days\' notice. Confirm new pricing in writing at least 60 days before renewal. No variation needed for continuation.' },
+    fixed: { cls:'info', icon:'⚡', txt:'Fixed term expiry: a formal extension or new agreement is required. Echo will draft renewal clauses and can generate the new contract period documentation ready for signature.' }
+  };
+  const r = m[typeEl.value] || m.mutual;
+  flagEl.className = 'flag ' + r.cls;
+  flagEl.innerHTML = '<span>'+r.icon+'</span><span>'+r.txt+'</span>';
 }
 
 slides[0].classList.add('active');
 document.getElementById('progress').style.width=(1/total*100)+'%';
 calc();
+updateRenewal();
 </script>
 </body>
 </html>
