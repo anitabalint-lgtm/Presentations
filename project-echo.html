@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Echo — Every commercial promise remembered.</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --echo-teal: #00d4b8;
+    --echo-teal-dim: #00a896;
+    --echo-dark: #0a0e1a;
+    --echo-card: #111827;
+    --echo-card2: #1a2236;
+    --echo-text: #e8eaf0;
+    --echo-muted: #8892a4;
+    --echo-accent: #3b82f6;
+    --echo-warn: #f59e0b;
+    --echo-red: #ef4444;
+    --echo-green: #22c55e;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--echo-dark);
+    color: var(--echo-text);
+    overflow: hidden;
+  }
+
+  /* ── SLIDE ENGINE ─────────────────────────────────────────── */
+  .deck { width: 100vw; height: 100vh; position: relative; }
+
+  .slide {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    padding: 60px 80px;
+    opacity: 0; pointer-events: none;
+    transition: opacity .45s ease, transform .45s ease;
+    transform: translateX(40px);
+  }
+  .slide.active {
+    opacity: 1; pointer-events: all;
+    transform: translateX(0);
+  }
+  .slide.prev {
+    opacity: 0; transform: translateX(-40px);
+  }
+
+  /* ── NAV ──────────────────────────────────────────────────── */
+  #nav {
+    position: fixed; bottom: 28px; right: 36px;
+    display: flex; gap: 12px; z-index: 100; align-items: center;
+  }
+  .nav-btn {
+    background: rgba(255,255,255,.08);
+    border: 1px solid rgba(255,255,255,.15);
+    color: var(--echo-text);
+    padding: 8px 20px; border-radius: 6px;
+    cursor: pointer; font-size: 14px;
+    transition: background .2s;
+  }
+  .nav-btn:hover { background: rgba(255,255,255,.15); }
+  #slide-counter {
+    font-size: 13px; color: var(--echo-muted);
+    min-width: 50px; text-align: center;
+  }
+
+  /* progress bar */
+  #progress {
+    position: fixed; top: 0; left: 0;
+    height: 3px; background: var(--echo-teal);
+    transition: width .4s ease; z-index: 200;
+  }
+
+  /* slide number pip */
+  .slide-num {
+    position: absolute; top: 22px; right: 36px;
+    font-size: 12px; color: rgba(255,255,255,.2);
+    letter-spacing: 1px;
+  }
+
+  /* ── TYPOGRAPHY ───────────────────────────────────────────── */
+  .tag {
+    font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase;
+    color: var(--echo-teal); font-weight: 600; margin-bottom: 14px;
+  }
+  h1 { font-size: clamp(48px, 7vw, 82px); font-weight: 800; line-height: 1.05; }
+  h2 { font-size: clamp(30px, 4vw, 50px); font-weight: 700; line-height: 1.1; }
+  h3 { font-size: clamp(20px, 2.5vw, 28px); font-weight: 600; }
+  .tagline {
+    font-size: clamp(18px, 2.5vw, 26px);
+    color: var(--echo-teal); font-style: italic; font-weight: 300;
+    margin-top: 18px;
+  }
+  p { font-size: clamp(15px, 1.8vw, 19px); color: var(--echo-muted); line-height: 1.7; }
+  .large { font-size: clamp(20px, 2.8vw, 30px); color: var(--echo-text); line-height: 1.5; }
+
+  /* ── UTILITY ──────────────────────────────────────────────── */
+  .centered { text-align: center; }
+  .left { text-align: left; }
+  .full-w { width: 100%; }
+
+  .teal { color: var(--echo-teal); }
+  .muted { color: var(--echo-muted); }
+  .warn { color: var(--echo-warn); }
+  .red { color: var(--echo-red); }
+  .green { color: var(--echo-green); }
+  .blue { color: var(--echo-accent); }
+
+  .spacer { margin-top: 32px; }
+  .spacer-sm { margin-top: 16px; }
+
+  /* ── CARDS ────────────────────────────────────────────────── */
+  .card {
+    background: var(--echo-card);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 12px;
+    padding: 24px 28px;
+  }
+  .card-grid {
+    display: grid; gap: 16px; width: 100%;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+
+  /* ── CHAOS GRID (slide 2) ─────────────────────────────────── */
+  .chaos-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 14px; width: 100%; margin-top: 32px;
+  }
+  .chaos-item {
+    background: var(--echo-card);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 10px; padding: 18px 14px;
+    text-align: center;
+  }
+  .chaos-icon { font-size: 28px; margin-bottom: 8px; }
+  .chaos-label { font-size: 12px; color: var(--echo-muted); text-transform: uppercase; letter-spacing: 1px; }
+  .chaos-item .snippet {
+    font-size: 10px; color: rgba(255,255,255,.3);
+    margin-top: 8px; line-height: 1.5;
+    font-family: monospace;
+  }
+
+  /* ── QUESTION SLIDE (slide 3) ─────────────────────────────── */
+  .question-box {
+    background: linear-gradient(135deg, rgba(0,212,184,.08), rgba(59,130,246,.06));
+    border: 1px solid rgba(0,212,184,.3);
+    border-radius: 16px; padding: 40px 60px;
+    text-align: center; margin-top: 32px;
+  }
+  .question-text {
+    font-size: clamp(22px, 3vw, 36px);
+    font-style: italic; font-weight: 300;
+    color: var(--echo-teal);
+  }
+
+  /* ── PROBLEM COST (slide 4) ───────────────────────────────── */
+  .cost-list { list-style: none; margin-top: 28px; }
+  .cost-list li {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255,255,255,.05);
+    font-size: clamp(15px, 2vw, 20px);
+  }
+  .cost-list li:last-child { border-bottom: none; }
+  .cost-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+
+  /* ── ECHO INTERFACE (slide 5) ─────────────────────────────── */
+  .echo-ui {
+    background: var(--echo-card);
+    border: 1px solid rgba(0,212,184,.25);
+    border-radius: 14px; width: 100%;
+    overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,.5);
+  }
+  .echo-topbar {
+    background: var(--echo-card2);
+    padding: 14px 22px;
+    display: flex; align-items: center; gap: 14px;
+    border-bottom: 1px solid rgba(255,255,255,.07);
+  }
+  .echo-logo {
+    font-size: 15px; font-weight: 700;
+    color: var(--echo-teal); letter-spacing: 1px;
+  }
+  .echo-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .dot-r { background: #ff5f57; }
+  .dot-y { background: #febc2e; }
+  .dot-g { background: #28c840; }
+  .dots { display: flex; gap: 6px; margin-right: 8px; }
+
+  .echo-search {
+    flex: 1;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 8px; padding: 9px 16px;
+    color: var(--echo-text); font-size: 14px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .echo-search span { color: var(--echo-muted); }
+  .echo-search .query { color: var(--echo-text); }
+  .echo-search .cursor {
+    display: inline-block; width: 2px; height: 14px;
+    background: var(--echo-teal);
+    animation: blink 1s step-end infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .echo-body { padding: 22px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  .echo-section-title {
+    font-size: 11px; text-transform: uppercase;
+    letter-spacing: 2px; color: var(--echo-teal);
+    margin-bottom: 10px; font-weight: 600;
+  }
+  .echo-row {
+    display: flex; justify-content: space-between;
+    padding: 7px 0;
+    border-bottom: 1px solid rgba(255,255,255,.04);
+    font-size: 13px;
+  }
+  .echo-row:last-child { border-bottom: none; }
+  .echo-row .label { color: var(--echo-muted); }
+  .echo-row .value { font-weight: 600; }
+
+  .flag-item {
+    display: flex; gap: 8px; align-items: flex-start;
+    padding: 6px 0; font-size: 13px; color: var(--echo-warn);
+  }
+  .flag-item .fi-text { color: var(--echo-text); }
+
+  .confidence-bar {
+    display: flex; gap: 4px; margin-bottom: 10px; align-items: center;
+  }
+  .conf-segment {
+    height: 6px; border-radius: 3px; flex: 1;
+  }
+  .conf-label { font-size: 11px; color: var(--echo-muted); margin-left: 8px; }
+
+  /* ── EMAIL DRAFT (slide 7) ────────────────────────────────── */
+  .email-mock {
+    background: var(--echo-card);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 12px; width: 100%;
+    overflow: hidden; font-size: 13px;
+  }
+  .email-header {
+    background: var(--echo-card2);
+    padding: 16px 22px;
+    border-bottom: 1px solid rgba(255,255,255,.07);
+    display: grid; grid-template-columns: 80px 1fr; gap: 6px 16px;
+  }
+  .email-field-label { color: var(--echo-muted); font-size: 12px; align-self: center; }
+  .email-field-value { color: var(--echo-text); }
+  .email-body { padding: 22px; color: var(--echo-text); line-height: 1.75; font-size: 13.5px; }
+  .email-body .hl { color: var(--echo-teal); }
+  .email-tag {
+    display: inline-block; font-size: 10px;
+    background: rgba(0,212,184,.12);
+    color: var(--echo-teal);
+    border: 1px solid rgba(0,212,184,.3);
+    border-radius: 4px; padding: 2px 7px;
+    margin-left: 8px; vertical-align: middle;
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+
+  /* ── ARCHITECTURE (slide 8) ───────────────────────────────── */
+  .arch-flow {
+    display: flex; align-items: center;
+    gap: 0; width: 100%; margin-top: 28px;
+    flex-wrap: wrap; justify-content: center;
+  }
+  .arch-node {
+    background: var(--echo-card);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 10px; padding: 16px 20px;
+    text-align: center; min-width: 120px;
+  }
+  .arch-node .an-icon { font-size: 26px; margin-bottom: 6px; }
+  .arch-node .an-label { font-size: 12px; color: var(--echo-muted); }
+  .arch-arrow {
+    color: var(--echo-teal); font-size: 20px;
+    padding: 0 8px; flex-shrink: 0;
+  }
+
+  /* ── IMPACT (slide 9) ─────────────────────────────────────── */
+  .impact-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 16px; width: 100%; margin-top: 28px;
+  }
+  .impact-card {
+    background: var(--echo-card);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 12px; padding: 24px 18px;
+    text-align: center;
+  }
+  .impact-card .ic-num {
+    font-size: 36px; font-weight: 800;
+    color: var(--echo-teal); display: block;
+    margin-bottom: 6px;
+  }
+  .impact-card .ic-label { font-size: 13px; color: var(--echo-muted); }
+
+  /* ── VISION (slide 10) ────────────────────────────────────── */
+  .vision-list { list-style: none; margin-top: 28px; }
+  .vision-list li {
+    display: flex; gap: 16px; align-items: flex-start;
+    padding: 16px 0;
+    border-bottom: 1px solid rgba(255,255,255,.05);
+    font-size: clamp(14px, 1.8vw, 18px);
+  }
+  .vision-list li:last-child { border-bottom: none; }
+  .vision-num {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: rgba(0,212,184,.15);
+    border: 1px solid rgba(0,212,184,.4);
+    color: var(--echo-teal); font-size: 12px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; font-weight: 700;
+  }
+  .vision-title { font-weight: 600; color: var(--echo-text); }
+  .vision-desc { color: var(--echo-muted); font-size: 0.9em; margin-top: 2px; }
+
+  /* ── HOLIDAY SLIDE (slide 11) ─────────────────────────────── */
+  .compare-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 20px; width: 100%; margin-top: 28px;
+  }
+  .compare-card {
+    border-radius: 12px; padding: 24px;
+    border: 1px solid;
+  }
+  .compare-card.before {
+    background: rgba(239,68,68,.06);
+    border-color: rgba(239,68,68,.25);
+  }
+  .compare-card.after {
+    background: rgba(34,197,94,.06);
+    border-color: rgba(34,197,94,.25);
+  }
+  .compare-card h3 { margin-bottom: 14px; font-size: 16px; }
+  .compare-card ul { list-style: none; }
+  .compare-card ul li {
+    padding: 7px 0;
+    border-bottom: 1px solid rgba(255,255,255,.04);
+    font-size: 14px; color: var(--echo-muted);
+    display: flex; gap: 10px;
+  }
+  .compare-card ul li:last-child { border-bottom: none; }
+
+  /* ── CLOSING SLIDE ────────────────────────────────────────── */
+  .echo-wordmark {
+    font-size: clamp(52px, 8vw, 96px);
+    font-weight: 900; letter-spacing: -2px;
+    background: linear-gradient(135deg, #00d4b8, #3b82f6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .closing-tagline {
+    font-size: clamp(18px, 2.5vw, 28px);
+    color: rgba(255,255,255,.7);
+    margin-top: 16px; font-style: italic;
+  }
+
+  /* ── SLIDE BACKGROUNDS ────────────────────────────────────── */
+  .bg-radial::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 60% 60% at 50% 50%,
+      rgba(0,212,184,.05) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .bg-radial-blue::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 70% 70% at 80% 20%,
+      rgba(59,130,246,.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .bg-grid::after {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.015) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+  }
+
+  /* ── TWO COL ──────────────────────────────────────────────── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; width: 100%; align-items: start; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; width: 100%; }
+
+  /* ── PILL BADGE ───────────────────────────────────────────── */
+  .pill {
+    display: inline-block;
+    background: rgba(0,212,184,.12);
+    border: 1px solid rgba(0,212,184,.3);
+    color: var(--echo-teal);
+    border-radius: 100px; padding: 4px 14px;
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 1px; text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  /* ── OPPORTUNITY BOX ──────────────────────────────────────── */
+  .opp-box {
+    background: rgba(34,197,94,.08);
+    border: 1px solid rgba(34,197,94,.3);
+    border-radius: 10px; padding: 16px 22px;
+    display: flex; align-items: center; gap: 16px;
+    margin-top: 12px;
+  }
+  .opp-num { font-size: 28px; font-weight: 800; color: var(--echo-green); }
+  .opp-label { font-size: 13px; color: var(--echo-muted); }
+
+  /* speaker notes */
+  #notes-panel {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: rgba(0,0,0,.92);
+    border-top: 1px solid rgba(255,255,255,.1);
+    padding: 14px 36px;
+    font-size: 13px; color: rgba(255,255,255,.6);
+    line-height: 1.6;
+    transform: translateY(100%);
+    transition: transform .3s;
+    z-index: 300; max-height: 180px; overflow-y: auto;
+  }
+  #notes-panel.open { transform: translateY(0); }
+  #notes-toggle {
+    position: fixed; bottom: 28px; left: 36px;
+    background: rgba(255,255,255,.07);
+    border: 1px solid rgba(255,255,255,.12);
+    color: var(--echo-muted); padding: 7px 16px;
+    border-radius: 6px; cursor: pointer; font-size: 12px;
+    z-index: 400; transition: background .2s;
+  }
+  #notes-toggle:hover { background: rgba(255,255,255,.12); }
+  .notes-label { color: var(--echo-teal); font-weight: 600; margin-bottom: 4px; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+
+<div class="deck" id="deck">
+
+  <!-- ══ SLIDE 1 — TITLE ══════════════════════════════════════ -->
+  <div class="slide centered bg-radial bg-grid" data-notes="Open with silence for 2 seconds. Let the name land. Say: 'We lose commercial memory every day. Not dramatically — quietly. A discount promised in a Slack message. A renewal clause buried in an email thread. An agreement made by someone who left six months ago. This is Project Echo.'">
+    <div class="slide-num">01 / 12</div>
+    <div class="tag">TalkLife Hack Week 2025</div>
+    <h1 class="teal">Project Echo</h1>
+    <div class="tagline">"Every commercial promise remembered."</div>
+    <div style="margin-top:48px; color: var(--echo-muted); font-size:14px; letter-spacing:2px; text-transform:uppercase;">
+      AI-Powered Renewal Intelligence
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 2 — THE CHAOS ══════════════════════════════════ -->
+  <div class="slide bg-grid" data-notes="Set the scene. 'It's renewal time. You need to answer one question: can this customer keep their discount? Simple question. But here's what actually happens...' Point at each system. Pause on the last one. Let the fragmentation sink in.">
+    <div class="slide-num">02 / 12</div>
+    <div class="tag">The Problem</div>
+    <h2>A simple question. <span class="teal">Five systems.</span></h2>
+    <p class="spacer-sm">CS receives a renewal query. The clock starts.</p>
+    <div class="chaos-grid">
+      <div class="chaos-item">
+        <div class="chaos-icon">🟠</div>
+        <div class="chaos-label">HubSpot</div>
+        <div class="snippet">NOTE: "discount discussed<br>in Q3 call — see email"</div>
+      </div>
+      <div class="chaos-item">
+        <div class="chaos-icon">📧</div>
+        <div class="chaos-label">Email Thread</div>
+        <div class="snippet">Re: Re: Re: Fw: Pricing<br>48 messages deep</div>
+      </div>
+      <div class="chaos-item">
+        <div class="chaos-icon">📄</div>
+        <div class="chaos-label">PDF Contract</div>
+        <div class="snippet">§7.2 Pricing...<br>§12 Amendment...</div>
+      </div>
+      <div class="chaos-item">
+        <div class="chaos-icon">💬</div>
+        <div class="chaos-label">Slack</div>
+        <div class="snippet">"just to clarify the<br>discount is temp btw"</div>
+      </div>
+      <div class="chaos-item">
+        <div class="chaos-icon">📊</div>
+        <div class="chaos-label">Pricing Sheet</div>
+        <div class="snippet">v3_FINAL_v2<br>_UPDATED_USE_THIS</div>
+      </div>
+    </div>
+    <div class="spacer">
+      <p style="text-align:center; font-size:16px;">To answer <em>one</em> renewal question, CS manually reconstructs commercial intent across <span class="teal" style="font-weight:700;">5 systems</span>.</p>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 3 — THE QUESTION ════════════════════════════════ -->
+  <div class="slide centered bg-radial-blue" data-notes="Ask the room: 'Can anyone tell me — for any of our clients right now — whether their discount was meant to be permanent?' Pause. Let it be uncomfortable. Then: 'Nobody knows. Not quickly. And that's expensive.'">
+    <div class="slide-num">03 / 12</div>
+    <div class="tag">The Moment of Truth</div>
+    <h2>The question every CS manager <span class="teal">dreads.</span></h2>
+    <div class="question-box">
+      <div class="question-text">"Can this customer's discount continue next year?"</div>
+    </div>
+    <div class="spacer" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; width:100%;">
+      <div class="card centered">
+        <div style="font-size:28px; margin-bottom:8px;">🔍</div>
+        <div style="font-size:13px; color:var(--echo-muted);">Nobody knows quickly</div>
+      </div>
+      <div class="card centered">
+        <div style="font-size:28px; margin-bottom:8px;">📦</div>
+        <div style="font-size:13px; color:var(--echo-muted);">Information is buried</div>
+      </div>
+      <div class="card centered">
+        <div style="font-size:28px; margin-bottom:8px;">⚠️</div>
+        <div style="font-size:13px; color:var(--echo-muted);">Real commercial risk exists</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 4 — WHY THIS HURTS ══════════════════════════════ -->
+  <div class="slide bg-grid" data-notes="This is the 'cost of the problem' slide. Say: 'And it's not just inefficiency. When institutional memory lives in people, it leaves with people. Every time someone walks out the door, we lose commercial context we can never fully recover.'">
+    <div class="slide-num">04 / 12</div>
+    <div class="tag">The Real Cost</div>
+    <h2>Commercial memory lives <span class="red">in people.</span></h2>
+    <p class="spacer-sm">When they leave, it leaves with them.</p>
+    <ul class="cost-list full-w spacer">
+      <li>
+        <span class="cost-icon">💸</span>
+        <div>
+          <span style="font-weight:600;">Revenue leakage</span>
+          <span class="muted"> — discounts silently continue beyond their agreed scope</span>
+        </div>
+      </li>
+      <li>
+        <span class="cost-icon">⚖️</span>
+        <div>
+          <span style="font-weight:600;">Legal exposure</span>
+          <span class="muted"> — verbal and email commitments carry real contractual weight</span>
+        </div>
+      </li>
+      <li>
+        <span class="cost-icon">🐌</span>
+        <div>
+          <span style="font-weight:600;">Renewal drag</span>
+          <span class="muted"> — hours spent archaeology before every renewal conversation</span>
+        </div>
+      </li>
+      <li>
+        <span class="cost-icon">👤</span>
+        <div>
+          <span style="font-weight:600;">Key-person dependency</span>
+          <span class="muted"> — renewals stall when one person is away, or leaves</span>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <!-- ══ SLIDE 5 — INTRODUCING ECHO ════════════════════════════ -->
+  <div class="slide centered bg-radial" data-notes="Pause. Smile. 'So we built Project Echo.' Read the tagline. Then: 'Echo is not a search tool. It's commercial memory infrastructure. It turns fragmented knowledge — spread across contracts, emails, CRM notes, and Slack — into a single, intelligent, queryable system.'">
+    <div class="slide-num">05 / 12</div>
+    <div class="tag">The Solution</div>
+    <div class="echo-wordmark">echo</div>
+    <div class="closing-tagline">"Every commercial promise remembered."</div>
+    <div class="spacer" style="display:grid; grid-template-columns: repeat(3,1fr); gap:14px; width:100%;">
+      <div class="card centered">
+        <div style="font-size:22px; margin-bottom:8px;">🧠</div>
+        <div style="font-size:13px; font-weight:600; margin-bottom:4px;">Understands</div>
+        <div style="font-size:12px; color:var(--echo-muted);">Contracts, emails, CRM notes, Slack</div>
+      </div>
+      <div class="card centered">
+        <div style="font-size:22px; margin-bottom:8px;">🔍</div>
+        <div style="font-size:13px; font-weight:600; margin-bottom:4px;">Reconstructs</div>
+        <div style="font-size:12px; color:var(--echo-muted);">Pricing history &amp; commercial intent</div>
+      </div>
+      <div class="card centered">
+        <div style="font-size:22px; margin-bottom:8px;">✍️</div>
+        <div style="font-size:13px; font-weight:600; margin-bottom:4px;">Drafts</div>
+        <div style="font-size:12px; color:var(--echo-muted);">Legally-aware renewal communications</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 6 — LIVE DEMO / ECHO UI ═════════════════════════ -->
+  <div class="slide bg-grid" style="padding: 40px 60px;" data-notes="This is the magic moment. Say: 'Here's Echo. One question. Watch what happens.' Type the query slowly. Then watch the output populate. Point to each section: the pricing, the risk flags, the confidence score. Say: 'This took Echo 3 seconds. It used to take 45 minutes.'">
+    <div class="slide-num">06 / 12</div>
+    <div class="tag">Demo — Acme Health Renewal</div>
+    <div class="echo-ui full-w">
+      <div class="echo-topbar">
+        <div class="dots">
+          <div class="echo-dot dot-r"></div>
+          <div class="echo-dot dot-y"></div>
+          <div class="echo-dot dot-g"></div>
+        </div>
+        <div class="echo-logo">◎ PROJECT ECHO</div>
+        <div class="echo-search">
+          <span>🔍</span>
+          <span class="query">What can we charge Acme Health at renewal?</span>
+          <span class="cursor"></span>
+        </div>
+      </div>
+      <div class="echo-body">
+        <div>
+          <div class="echo-section-title">Commercial Summary</div>
+          <div class="echo-row"><span class="label">Current price</span><span class="value teal">£2.10 per life</span></div>
+          <div class="echo-row"><span class="label">Covered lives</span><span class="value">18,400</span></div>
+          <div class="echo-row"><span class="label">Annual contract value</span><span class="value">£38,640</span></div>
+          <div class="echo-row"><span class="label">Discount applied</span><span class="value warn">20% — temporary</span></div>
+          <div class="echo-row"><span class="label">Discount rationale</span><span class="value" style="font-size:12px;">"Financial hardship support"</span></div>
+          <div class="echo-row"><span class="label">Discount expiry</span><span class="value red">Ended after Year 1</span></div>
+          <div class="echo-row"><span class="label">Contractual notice</span><span class="value">60-day price increase notice</span></div>
+          <div class="echo-row"><span class="label">Suggested renewal range</span><span class="value green">£2.35 – £2.50 per life</span></div>
+          <div class="opp-box">
+            <div>
+              <div class="opp-label">Uplift opportunity</div>
+              <div class="opp-num">+£12,400 ARR</div>
+            </div>
+            <div style="font-size:12px; color:var(--echo-muted);">if renewed at £2.50/life with existing subscriber count</div>
+          </div>
+        </div>
+        <div>
+          <div class="echo-section-title">Risk Flags</div>
+          <div class="flag-item"><span>⚠️</span><span class="fi-text">Discount continuation not explicitly defined in contract</span></div>
+          <div class="flag-item"><span>⚠️</span><span class="fi-text">Sales email implies expectation of gradual uplift</span></div>
+          <div class="flag-item"><span>⚠️</span><span class="fi-text">No renewal cap clause present</span></div>
+          <div style="margin-top:16px;">
+            <div class="echo-section-title">AI Confidence</div>
+            <div class="confidence-bar">
+              <div class="conf-segment" style="background:var(--echo-teal);"></div>
+              <div class="conf-segment" style="background:var(--echo-teal);"></div>
+              <div class="conf-segment" style="background:var(--echo-teal);"></div>
+              <div class="conf-segment" style="background:var(--echo-teal); opacity:.4;"></div>
+              <div class="conf-segment" style="background:rgba(255,255,255,.1);"></div>
+              <span class="conf-label">High — 4 sources cross-referenced</span>
+            </div>
+          </div>
+          <div style="margin-top:16px;">
+            <div class="echo-section-title">Recommended Actions</div>
+            <div style="font-size:13px; color:var(--echo-muted); line-height:1.8;">
+              ✅ Notify customer before <span class="teal">15 June 2025</span><br>
+              ✅ Clarify expiry of temporary hardship discount<br>
+              ✅ Include revised rate schedule in renewal email<br>
+              ✅ Reference original agreement rationale
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 7 — DRAFT EMAIL ══════════════════════════════════ -->
+  <div class="slide bg-grid" style="padding: 40px 60px;" data-notes="Say: 'And then Echo does this.' Let them read the email for a few seconds. Then: 'That email took 8 seconds to generate. It references the original agreement, it uses legally safer language, it's ready to send. This is the magic moment.'">
+    <div class="slide-num">07 / 12</div>
+    <div class="tag">Demo — Auto-Generated Renewal Email</div>
+    <div class="email-mock full-w">
+      <div class="email-header">
+        <span class="email-field-label">From</span>
+        <span class="email-field-value">Customer Success Team &lt;cs@talklife.com&gt;</span>
+        <span class="email-field-label">To</span>
+        <span class="email-field-value">procurement@acmehealth.co.uk</span>
+        <span class="email-field-label">Subject</span>
+        <span class="email-field-value">Acme Health — 2025 Renewal &amp; Revised Pricing Schedule <span class="email-tag">Echo generated</span></span>
+      </div>
+      <div class="email-body">
+        <p>Dear Sarah,</p><br>
+        <p>I'm writing ahead of your <span class="hl">1 July renewal</span> to outline the revised pricing for the upcoming contract year.</p><br>
+        <p>When we agreed your current rate of <span class="hl">£2.10 per life</span>, this reflected a temporary hardship discount applied during an exceptionally difficult period for your organisation. As noted in our agreement at the time, this arrangement was <span class="hl">intended for Year 1 only</span>.</p><br>
+        <p>For the 2025–26 contract year, we are proposing a revised rate of <span class="hl">£2.40 per life</span>, representing a modest and commercially reasonable adjustment that remains below standard rate card. This reflects both the continued partnership and our mutual commitment to sustainable pricing.</p><br>
+        <p>In line with your contract, we are providing this notice <span class="hl">more than 60 days ahead</span> of renewal to allow full planning time on your side.</p><br>
+        <p>I'd welcome a call to discuss. Would any of the following times work for you?</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 8 — ARCHITECTURE ════════════════════════════════ -->
+  <div class="slide bg-grid" data-notes="Keep this brief — 30 seconds. Say: 'Under the hood, Echo connects to your existing systems — HubSpot, email, contracts. It uses AI to extract and reason, and outputs structured commercial intelligence. It doesn't replace your tools. It reads all of them so you don't have to.'">
+    <div class="slide-num">08 / 12</div>
+    <div class="tag">How It Works</div>
+    <h2>Simple architecture. <span class="teal">Powerful output.</span></h2>
+    <div class="arch-flow spacer">
+      <div class="arch-node">
+        <div class="an-icon">📥</div>
+        <div class="an-label">Ingest<br><span style="font-size:10px;">Contracts · Emails<br>CRM · Slack</span></div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node">
+        <div class="an-icon">🤖</div>
+        <div class="an-label">AI Extract<br><span style="font-size:10px;">GPT · OCR<br>Embeddings</span></div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node">
+        <div class="an-icon">🧮</div>
+        <div class="an-label">Reason<br><span style="font-size:10px;">Pricing rules<br>Risk engine</span></div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node" style="border-color: rgba(0,212,184,.4);">
+        <div class="an-icon">✨</div>
+        <div class="an-label" style="color:var(--echo-teal);">Echo Output<br><span style="font-size:10px;">Summary · Flags<br>Draft email</span></div>
+      </div>
+    </div>
+    <div class="spacer" style="display:grid; grid-template-columns:repeat(4,1fr); gap:12px; width:100%;">
+      <div class="card centered" style="padding:16px;">
+        <div style="font-size:11px; color:var(--echo-muted);">HubSpot API</div>
+      </div>
+      <div class="card centered" style="padding:16px;">
+        <div style="font-size:11px; color:var(--echo-muted);">PDF / OCR parsing</div>
+      </div>
+      <div class="card centered" style="padding:16px;">
+        <div style="font-size:11px; color:var(--echo-muted);">Vector search</div>
+      </div>
+      <div class="card centered" style="padding:16px;">
+        <div style="font-size:11px; color:var(--echo-muted);">Email generation</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 9 — "WHAT IF ANITA'S ON HOLIDAY?" ═══════════════ -->
+  <div class="slide" data-notes="This is the killer moment. Say: 'Let me ask you something. What happens to our renewal pipeline if the one person who holds all this context in their head... is on holiday?' Pause. Let it land. Then reveal the comparison.">
+    <div class="slide-num">09 / 12</div>
+    <div class="tag">Resilience Test</div>
+    <h2>What happens when <span class="teal">that person</span> is on holiday?</h2>
+    <div class="compare-grid">
+      <div class="compare-card before">
+        <h3 class="red">Today — Without Echo</h3>
+        <ul>
+          <li><span>❌</span> Renewal process stalls</li>
+          <li><span>❌</span> Team emails one person on leave</li>
+          <li><span>❌</span> Deadlines slip, customer trust erodes</li>
+          <li><span>❌</span> Commercial intent is locked in one brain</li>
+          <li><span>❌</span> If they leave — it's gone forever</li>
+        </ul>
+      </div>
+      <div class="compare-card after">
+        <h3 class="green">With Echo</h3>
+        <ul>
+          <li><span>✅</span> Any team member opens Echo</li>
+          <li><span>✅</span> Full commercial history, instantly</li>
+          <li><span>✅</span> Renewal proceeds with confidence</li>
+          <li><span>✅</span> Consistent, legally-aware guidance</li>
+          <li><span>✅</span> Knowledge belongs to the organisation</li>
+        </ul>
+      </div>
+    </div>
+    <div class="spacer">
+      <p class="centered large" style="font-style:italic;">"Echo converts <span class="red">personal knowledge</span> into <span class="teal">searchable operational intelligence.</span>"</p>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 10 — FUTURE VISION ══════════════════════════════ -->
+  <div class="slide bg-grid" data-notes="Keep this quick — 45 seconds. Say: 'The MVP is what you've just seen. But Echo's vision is broader.' Run through the list quickly. Emphasise that this is extensible — it's a platform, not a feature.">
+    <div class="slide-num">10 / 12</div>
+    <div class="tag">Future Vision</div>
+    <h2>Echo MVP is the foundation. <span class="teal">The platform is bigger.</span></h2>
+    <ul class="vision-list full-w spacer">
+      <li>
+        <div class="vision-num">1</div>
+        <div>
+          <div class="vision-title">Commercial Timeline View</div>
+          <div class="vision-desc">Visual history of every pricing change, discount, and negotiation promise per customer</div>
+        </div>
+      </li>
+      <li>
+        <div class="vision-num">2</div>
+        <div>
+          <div class="vision-title">Missing Clause Detection</div>
+          <div class="vision-desc">"Price uplift mechanism absent" — flags gaps legal teams will immediately value</div>
+        </div>
+      </li>
+      <li>
+        <div class="vision-num">3</div>
+        <div>
+          <div class="vision-title">Revenue Opportunity Dashboard</div>
+          <div class="vision-desc">Surfaces all accounts with expired discounts or uplift potential — pipeline for CS</div>
+        </div>
+      </li>
+      <li>
+        <div class="vision-num">4</div>
+        <div>
+          <div class="vision-title">Automated CRM Enrichment</div>
+          <div class="vision-desc">Echo writes back structured commercial summaries to HubSpot automatically</div>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <!-- ══ SLIDE 11 — IMPACT ══════════════════════════════════════ -->
+  <div class="slide centered bg-radial" data-notes="Say: 'Here's what Echo means in practice.' Walk through each metric briefly. Then: 'This isn't a technical toy. It's directly tied to revenue protection, legal risk reduction, and operational resilience. That's real impact.'">
+    <div class="slide-num">11 / 12</div>
+    <div class="tag">Business Impact</div>
+    <h2>Not a feature. <span class="teal">Commercial infrastructure.</span></h2>
+    <div class="impact-grid">
+      <div class="impact-card">
+        <span class="ic-num">~45min</span>
+        <div class="ic-label">saved per renewal query<br><span style="color:var(--echo-teal);">→ seconds with Echo</span></div>
+      </div>
+      <div class="impact-card">
+        <span class="ic-num">100%</span>
+        <div class="ic-label">of commercial history<br>preserved at all times</div>
+      </div>
+      <div class="impact-card">
+        <span class="ic-num">£0</span>
+        <div class="ic-label">revenue left on table<br>from untracked discounts</div>
+      </div>
+      <div class="impact-card">
+        <span class="ic-num">Day 1</span>
+        <div class="ic-label">any new CS hire is up to speed<br>on every account</div>
+      </div>
+    </div>
+    <div class="spacer" style="width:100%;">
+      <div class="card centered" style="padding:20px 40px;">
+        <p class="large" style="color:var(--echo-text); font-style:italic;">
+          "Faster renewals. Lower risk. Improved revenue retention.<br>Scalable commercial intelligence."
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 12 — CLOSING ══════════════════════════════════════ -->
+  <div class="slide centered bg-radial bg-grid" data-notes="Slow down. Make eye contact. Say the full version first: 'Right now, our commercial memory lives in scattered notes and individual people. Project Echo turns that fragmented knowledge into a searchable, intelligent renewal system that protects revenue, reduces risk, and gives Customer Success confidence at every single renewal conversation.' Then pause. Then just say: 'Every commercial promise remembered.' Leave the room with that.">
+    <div class="slide-num">12 / 12</div>
+    <div class="echo-wordmark">echo</div>
+    <div style="margin-top: 28px; max-width: 680px;">
+      <p style="font-size: clamp(16px, 2vw, 22px); color: rgba(255,255,255,.75); line-height: 1.7; font-style:italic;">
+        "Right now, our commercial memory lives in scattered notes<br>
+        and individual employees.<br><br>
+        Project Echo turns that fragmented knowledge into a searchable,<br>
+        intelligent renewal system that protects revenue,<br>
+        reduces risk, and gives Customer Success confidence<br>
+        at every renewal conversation."
+      </p>
+    </div>
+    <div style="margin-top: 40px;">
+      <div style="
+        font-size: clamp(22px, 3vw, 36px);
+        color: var(--echo-teal);
+        font-style: italic;
+        font-weight: 300;
+        letter-spacing: 1px;
+        border-top: 1px solid rgba(0,212,184,.3);
+        padding-top: 28px;
+      ">"Every commercial promise remembered."</div>
+    </div>
+  </div>
+
+</div><!-- /deck -->
+
+<!-- CONTROLS -->
+<button id="notes-toggle" onclick="toggleNotes()">📝 Speaker Notes</button>
+
+<div id="notes-panel">
+  <div class="notes-label">Speaker Notes</div>
+  <div id="notes-text"></div>
+</div>
+
+<div id="nav">
+  <button class="nav-btn" onclick="go(-1)">← Prev</button>
+  <span id="slide-counter">1 / 12</span>
+  <button class="nav-btn" onclick="go(1)">Next →</button>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let cur = 0;
+  let notesOpen = false;
+
+  function show(n) {
+    slides[cur].classList.remove('active');
+    slides[cur].classList.add('prev');
+    setTimeout(() => slides[cur].classList.remove('prev'), 500);
+    cur = (n + total) % total;
+    slides[cur].classList.add('active');
+    document.getElementById('slide-counter').textContent = (cur + 1) + ' / ' + total;
+    document.getElementById('progress').style.width = ((cur + 1) / total * 100) + '%';
+    document.getElementById('notes-text').textContent = slides[cur].dataset.notes || '';
+  }
+
+  function go(dir) { show(cur + dir); }
+
+  function toggleNotes() {
+    notesOpen = !notesOpen;
+    document.getElementById('notes-panel').classList.toggle('open', notesOpen);
+    document.getElementById('notes-toggle').textContent = notesOpen ? '✕ Close Notes' : '📝 Speaker Notes';
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); go(1); }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); go(-1); }
+    if (e.key === 'n' || e.key === 'N') toggleNotes();
+    if (e.key === 'Escape' && notesOpen) toggleNotes();
+  });
+
+  // Touch swipe
+  let tx = 0;
+  document.addEventListener('touchstart', e => { tx = e.touches[0].clientX; });
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - tx;
+    if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1);
+  });
+
+  // Init
+  slides[0].classList.add('active');
+  document.getElementById('progress').style.width = (1 / total * 100) + '%';
+  document.getElementById('notes-text').textContent = slides[0].dataset.notes || '';
+</script>
+</body>
+</html>
