@@ -353,8 +353,8 @@ p   { font-size:clamp(14px,1.5vw,17px);color:var(--muted);line-height:1.7; }
         <div class="col-body" style="padding:9px 12px;">
           <div class="flag"><span>⚡</span><span>Opportunity: formally document discount expiry in the renewed agreement</span></div>
           <div class="flag"><span>⚡</span><span>Strengthen position: add price uplift mechanism to contract for future renewals</span></div>
-          <div class="flag info" id="renewal-flag"><span>ℹ️</span><span>Mutual agreement: a written email exchange confirming the renewed terms is legally sufficient at standard rate. A signed variation is required for any pricing change.</span></div>
-          <div class="flag ok"><span>✅</span><span>Customer sentiment: cooperative — 3 positive email responses in 90 days</span></div>
+          <div class="flag info" id="renewal-flag"><span>ℹ️</span><span>Mutual agreement: written confirmation required from both parties. Email or formal letter recommended. Any pricing change requires a signed variation for strongest legal protection.</span></div>
+          <div style="margin-top:10px;"><div class="etitle" style="color:var(--muted);">Renewal Notes</div><textarea id="renewal-notes" placeholder="e.g. Customer confirmed budget approved; requested 30-day extension before signing..." style="width:100%;background:var(--card2);border:1px solid var(--br);border-radius:7px;padding:8px 10px;font-size:11px;color:var(--text);resize:none;outline:none;font-family:inherit;line-height:1.5;margin-top:5px;" rows="2"></textarea></div>
           <div style="margin-top:10px;">
             <div class="etitle" style="color:var(--gold);">AI Confidence</div>
             <div style="display:flex;gap:3px;align-items:center;margin-top:4px;">
@@ -394,7 +394,7 @@ p   { font-size:clamp(14px,1.5vw,17px);color:var(--muted);line-height:1.7; }
           </div>
           <div id="echo-guidance" style="border-radius:7px;padding:8px 10px;font-size:11.5px;line-height:1.55;"></div>
           <div id="vt" style="display:none;margin-top:8px;">
-            <button onclick="openModal('renewal')" style="background:var(--teal);color:#fff;border:none;padding:7px 14px;border-radius:7px;cursor:pointer;font-size:11.5px;font-weight:800;width:100%;">📋 Generate Variation + Email</button>
+            <button id="gen-btn" onclick="openModal('renewal')" style="background:var(--teal);color:#fff;border:none;padding:7px 14px;border-radius:7px;cursor:pointer;font-size:11.5px;font-weight:800;width:100%;">📋 Generate Variation + Email</button>
           </div>
         </div>
       </div>
@@ -494,7 +494,7 @@ p   { font-size:clamp(14px,1.5vw,17px);color:var(--muted);line-height:1.7; }
         <div id="modal-email" style="font-size:12.5px;color:var(--muted);line-height:1.75;"></div>
       </div>
     </div>
-    <button class="dl-btn" id="modal-dl-btn">⬇ Download for Signature</button>
+    <button class="dl-btn" id="modal-dl-btn" onclick="fakeDownload(this)">⬇ Download for Signature</button>
   </div>
 </div>
 
@@ -558,22 +558,22 @@ function openModal(mode) {
     document.getElementById('modal-desc').textContent  = 'A formal signed variation is required to establish the 5-year term. Upload the existing contract and company template — Echo prepares the full extension agreement.';
     uploads.style.display = 'grid';
     document.getElementById('modal-clause').innerHTML =
-      'This Variation Agreement extends the subscription to a fixed 5-year term between TalkCampus Ltd and <span class="hl">University of Passau</span>. The 5-year term commences <span class="hl">1 July 2026</span> and expires <span class="hl">30 June 2031</span>. The price per covered life in Year 1 of the extended term is <span class="hl">'+fmtP(r)+'</span> for <span class="hl">'+lives.toLocaleString()+'</span> covered lives. Annual uplift of RPI+2% applies at each anniversary. Total commitment value at current rate: <span class="hl">'+fmt(fiveYr)+'</span>.'+(disc>0?' A discount of <span class="hl">'+disc+'%</span> applies to Year 1 of the extended term.':' No discount applies — standard rate card pricing.')+' The agreement may be terminated with 12 months\' written notice after Year 3. All other terms remain in full force.';
+      'This Variation Agreement extends the subscription to a fixed 5-year term between TalkCampus Ltd and <span class="hl">University of Passau</span>. The Extended Term commences <span class="hl">1 July 2026</span> and expires <span class="hl">30 June 2031</span>. The price per covered life for the Extended Term is <span class="hl">'+fmtP(r)+'</span> for <span class="hl">'+lives.toLocaleString()+'</span> covered lives. Annual uplift of RPI+2% applies at each anniversary. Total commitment value at current rate: <span class="hl">'+fmt(fiveYr)+'</span>.'+(disc>0?' A discount of <span class="hl">'+disc+'%</span> applies to the first year of the Extended Term only.':' No discount applies — standard rate card pricing.')+' The agreement may be terminated with 12 months\' written notice after Year 3. All other terms remain in full force.';
     document.getElementById('modal-email').innerHTML =
-      'Dear [Name],<br><br>I am pleased to confirm our agreement to extend the University of Passau subscription to a fixed <strong>5-year term</strong>, commencing <strong>1 July 2026</strong>.<br><br>The extended agreement covers <span style="color:var(--teal);font-weight:600;">'+lives.toLocaleString()+' covered lives</span> at <span style="color:var(--teal);font-weight:600;">'+fmtP(r)+' per life</span> in Year 1, with annual uplift of RPI+2% at each anniversary. Total 5-year commitment at current rate: <span style="color:var(--teal);font-weight:600;">'+fmt(fiveYr)+'</span>.<br><br>Please find the formal extension agreement attached for your review. If it is acceptable, please send back a signed copy at your earliest convenience.<br><br>[Your name]<br>TalkCampus';
+      'Dear [Name],<br><br>I am pleased to confirm our agreement to extend the University of Passau subscription to a fixed <strong>5-year term</strong>, commencing <strong>1 July 2026</strong>.<br><br>The extended agreement covers <span style="color:var(--teal);font-weight:600;">'+lives.toLocaleString()+' covered lives</span> at <span style="color:var(--teal);font-weight:600;">'+fmtP(r)+' per life</span> for the Extended Term'+(disc>0?', with a <span style="color:var(--gold);font-weight:600;">'+disc+'% discount</span> applied in Year 1':'')+', with annual uplift of RPI+2% at each anniversary. Total 5-year commitment at current rate: <span style="color:var(--teal);font-weight:600;">'+fmt(fiveYr)+'</span>.<br><br>Please find the formal extension agreement attached for your review. If it is acceptable, please send back a signed copy at your earliest convenience.<br><br>[Your name]<br>TalkCampus';
     document.getElementById('modal-email-section').style.display = 'block';
     document.getElementById('modal-dl-btn').textContent = '⬇ Download 5-Year Extension + Email';
 
   } else if (renewType === 'auto5') {
     const fiveYr = net * 5;
-    document.getElementById('modal-label').textContent = 'Echo · Long-Term Commitment';
-    document.getElementById('modal-title').textContent = 'Convert Auto-Renew to 5-Year Committed Term';
-    document.getElementById('modal-desc').textContent  = 'A formal signed variation is required to amend the auto-renewal clause and establish a fixed 5-year commitment. Upload the existing contract and company template.';
+    document.getElementById('modal-label').textContent = 'Echo · 5-Year Committed Extension';
+    document.getElementById('modal-title').textContent = 'Generate 5-Year Committed Extension & Email';
+    document.getElementById('modal-desc').textContent  = 'A formal signed variation is required to extend the subscription by a committed 5-year term. Upon expiry, auto-renewal resumes on a 12-month rolling basis. Upload the existing contract and company template.';
     uploads.style.display = 'grid';
     document.getElementById('modal-clause').innerHTML =
-      'This Variation Agreement amends Clause [X] (Auto-Renewal) of the Service Agreement between TalkCampus Ltd and <span class="hl">University of Passau</span>. The auto-renewal provision is replaced with a fixed 5-year term commencing <span class="hl">1 July 2026</span>. The price per covered life in Year 1 is <span class="hl">'+fmtP(r)+'</span> for <span class="hl">'+lives.toLocaleString()+'</span> covered lives. Annual uplift of RPI+2% applies at each anniversary. Total 5-year commitment at current rate: <span class="hl">'+fmt(fiveYr)+'</span>. Either party may terminate with <span class="hl">12 months\' written notice</span> after Year 3. All other terms remain in full force.';
+      'This Variation Agreement extends the subscription between TalkCampus Ltd and <span class="hl">University of Passau</span> by a committed 5-year term commencing <span class="hl">1 July 2026</span> and expiring <span class="hl">30 June 2031</span>. Following expiry of the committed term, the existing auto-renewal provisions resume on a 12-month rolling basis at then-prevailing rates, subject to 30 days\' written notice of termination. The price per covered life for the committed term is <span class="hl">'+fmtP(r)+'</span> for <span class="hl">'+lives.toLocaleString()+'</span> covered lives. Annual uplift of RPI+2% applies at each anniversary. Total 5-year commitment at current rate: <span class="hl">'+fmt(fiveYr)+'</span>.'+(disc>0?' A discount of <span class="hl">'+disc+'%</span> applies to Year 1 of the committed term only.':' No discount applies — standard rate card pricing.')+' All other terms remain in full force.';
     document.getElementById('modal-email').innerHTML =
-      'Dear [Name],<br><br>I am pleased to confirm our agreement to convert the University of Passau subscription from an auto-renewing arrangement to a fixed <strong>5-year committed term</strong>, commencing <strong>1 July 2026</strong>.<br><br>This gives the University certainty of provision and pricing over the full period, covering <span style="color:var(--teal);font-weight:600;">'+lives.toLocaleString()+' covered lives</span> at <span style="color:var(--teal);font-weight:600;">'+fmtP(r)+' per life</span> in Year 1, with RPI+2% uplift annually. Total 5-year commitment at current rate: <span style="color:var(--teal);font-weight:600;">'+fmt(fiveYr)+'</span>.<br><br>Please find the formal variation agreement attached for your review. If it is acceptable, please send back a signed copy at your earliest convenience.<br><br>[Your name]<br>TalkCampus';
+      'Dear [Name],<br><br>I am pleased to confirm our agreement to extend the University of Passau subscription by a committed <strong>5-year term</strong>, commencing <strong>1 July 2026</strong>. Following the expiry of this period, the subscription will revert to 12-month auto-renewal at then-prevailing rates.<br><br>The committed term covers <span style="color:var(--teal);font-weight:600;">'+lives.toLocaleString()+' covered lives</span> at <span style="color:var(--teal);font-weight:600;">'+fmtP(r)+' per life</span>'+(disc>0?', with a <span style="color:var(--gold);font-weight:600;">'+disc+'% discount</span> applied in Year 1 of the committed term':'')+', with RPI+2% uplift annually. Total 5-year commitment at current rate: <span style="color:var(--teal);font-weight:600;">'+fmt(fiveYr)+'</span>.<br><br>Please find the formal variation agreement attached for your review. If it is acceptable, please send back a signed copy at your earliest convenience.<br><br>[Your name]<br>TalkCampus';
     document.getElementById('modal-email-section').style.display = 'block';
     document.getElementById('modal-dl-btn').textContent = '⬇ Download 5-Year Commitment + Email';
 
@@ -585,7 +585,7 @@ function openModal(mode) {
     document.getElementById('modal-clause').innerHTML =
       'This Variation Agreement extends the subscription for a further <span class="hl">12-month term</span> commencing <span class="hl">1 July 2026</span> between TalkCampus Ltd and <span class="hl">University of Passau</span>. The price per covered life for the Extended Term is <span class="hl">'+fmtP(r)+'</span> for <span class="hl">'+lives.toLocaleString()+'</span> covered lives. Annual contract value: <span class="hl">'+fmt(net)+'</span>.'+(disc>0?' A discount of <span class="hl">'+disc+'%</span> has been agreed for the extended term.':' No discount applies — standard rate card pricing.')+' All other terms remain in full force.';
     document.getElementById('modal-email').innerHTML =
-      'Dear [Name],<br><br>I am pleased to confirm the extension of the University of Passau subscription for a further <strong>12 months</strong>, commencing <strong>1 July 2026</strong>.<br><br>The extended agreement covers <span style="color:var(--teal);font-weight:600;">'+lives.toLocaleString()+' covered lives</span> at <span style="color:var(--teal);font-weight:600;">'+fmtP(r)+' per life</span>, giving an annual contract value of <span style="color:var(--teal);font-weight:600;">'+fmt(net)+'</span>.<br><br>Please find the formal extension agreement attached for your review. If it is acceptable, please send back a signed copy at your earliest convenience.<br><br>[Your name]<br>TalkCampus';
+      'Dear [Name],<br><br>I am pleased to confirm the extension of the University of Passau subscription for a further <strong>12 months</strong>, commencing <strong>1 July 2026</strong>.<br><br>The extended agreement covers <span style="color:var(--teal);font-weight:600;">'+lives.toLocaleString()+' covered lives</span> at <span style="color:var(--teal);font-weight:600;">'+fmtP(r)+' per life</span>'+(disc>0?', with a <span style="color:var(--gold);font-weight:600;">'+disc+'% discount</span> agreed for the extended term':'')+', giving an annual contract value of <span style="color:var(--teal);font-weight:600;">'+fmt(net)+'</span>.<br><br>Please find the formal extension agreement attached for your review. If it is acceptable, please send back a signed copy at your earliest convenience.<br><br>[Your name]<br>TalkCampus';
     document.getElementById('modal-email-section').style.display = 'block';
     document.getElementById('modal-dl-btn').textContent = '⬇ Download Extension Agreement + Email';
 
@@ -641,18 +641,28 @@ function calc() {
   const discAdded     = disc > 0;
   const discUncertain = discType === 'ongoing';
   const needsVariation = rateChanged || discAdded || discUncertain;
-  /* Lives change alone does not require a variation — just confirm in renewal email */
   const livesChanged  = lives !== CONTRACT.lives;
+  const isFixed1      = renewType === 'fixed1';
 
   if (!needsVariation) {
-    if (livesChanged) {
+    if (isFixed1) {
+      if (livesChanged) {
+        g.style.cssText='background:rgba(37,99,235,.07);border:1px solid rgba(37,99,235,.2);color:#2563eb;';
+        g.textContent='Lives updated to '+lives.toLocaleString()+'. Standard rate applies. A signed extension agreement is required to renew — generate it below.';
+      } else {
+        g.style.cssText='background:rgba(5,150,105,.08);border:1px solid rgba(5,150,105,.25);color:#059669;';
+        g.textContent='Standard rate applies for the extended term. A signed extension agreement is required to continue — generate it below.';
+      }
+      vt.style.display='block';
+    } else if (livesChanged) {
       g.style.cssText='background:rgba(37,99,235,.07);border:1px solid rgba(37,99,235,.2);color:#2563eb;';
       g.textContent='Lives updated to '+lives.toLocaleString()+'. Standard rate applies. Confirm the new covered lives in your renewal email — no formal variation required.';
+      vt.style.display='none';
     } else {
       g.style.cssText='background:rgba(5,150,105,.08);border:1px solid rgba(5,150,105,.25);color:#059669;';
       g.textContent='Standard rate per contract. Invoice is ready to issue — no variation required.';
+      vt.style.display='none';
     }
-    vt.style.display='none';
   } else if (discUncertain) {
     g.style.cssText='background:rgba(220,38,38,.07);border:1px solid rgba(220,38,38,.25);color:#dc2626;';
     g.textContent='⚠️ Discount duration is undocumented — the customer may consider 20% their standard rate. Any pricing increase will be perceived as a contract change. A formal variation is strongly recommended to protect the right to uplift at renewal.';
@@ -667,7 +677,7 @@ function calc() {
     vt.style.display='block';
   } else if (rateChanged && ppl > CONTRACT.rate) {
     g.style.cssText='background:rgba(217,119,6,.07);border:1px solid rgba(217,119,6,.25);color:#d97706;';
-    g.textContent='Rate is above standard. Confirm this is intentional and document via a signed variation if the customer has agreed to uplift beyond the contracted terms.';
+    g.textContent='Rate is above standard. Confirm this is intended and document via a signed variation if the customer has agreed to uplift terms.';
     vt.style.display='block';
   }
 }
@@ -677,23 +687,50 @@ function updateRenewal() {
   const flagEl = document.getElementById('renewal-flag');
   if (!typeEl || !flagEl) return;
   const m = {
-    mutual: { cls:'info', txt:'Mutual agreement: a written email exchange confirming the renewed terms is legally sufficient for continuation at standard rate. For any pricing change or material variation, a signed contract amendment provides the strongest commercial and legal protection.' },
-    auto:   { cls:'ok',   txt:'Auto-renew: the contract rolls over automatically unless terminated with 30 days\' notice. Confirming renewal pricing by email is good practice and sufficient. A signed variation is only required if material terms — pricing, lives, or duration — are changing.' },
+    mutual: { cls:'info', txt:'Mutual agreement: written confirmation required from both parties. Email or formal letter recommended. Any pricing change requires a signed variation for strongest legal protection.' },
+    auto:   { cls:'ok',   txt:'Auto-renew: contract rolls over automatically unless the customer terminates with 30 days\' notice. Confirm new pricing in writing at least 60 days before renewal. No variation needed for continuation.' },
     fixed1: { cls:'info', txt:'Fixed term expiry: the subscription terminates at end of term. A signed extension agreement or new contract is required — an email confirmation alone is not legally sufficient. Echo can generate the full extension document.' },
     fixed5: { cls:'vio',  txt:'5-year extension: a formal signed variation is required, covering: updated term dates, annual pricing and uplift schedule, revised termination provisions (12 months\' notice after Year 3), and any volume commitments. Legal review is recommended before execution.' },
-    auto5:  { cls:'vio',  txt:'Conversion to 5-year committed term: a formal signed variation is required to amend the auto-renew clause, establish a fixed term, set multi-year pricing and uplift, and revise termination notice (typically 6–12 months for long-term contracts). Echo will draft the full variation.' }
+    auto5:  { cls:'vio',  txt:'5-year committed extension: the auto-renewal continues but the contract is extended by a fixed 5-year committed term. Once the 5-year period expires, the contract reverts to 12-month auto-renewal at then-prevailing rates. A formal signed variation is required to set the 5-year pricing and confirm reversion terms. Echo will draft the full variation.' }
   };
   const icons = { info:'ℹ️', ok:'✅', vio:'⚡' };
   const r = m[typeEl.value] || m.mutual;
   flagEl.className = 'flag ' + r.cls;
   flagEl.innerHTML = '<span>'+(icons[r.cls]||'ℹ️')+'</span><span>'+r.txt+'</span>';
-  calc(); /* re-run calc so 5yr guidance updates */
+  const genBtn = document.getElementById('gen-btn');
+  if (genBtn) {
+    const lbls = { fixed1:'📋 Generate Extension Agreement + Email', fixed5:'📋 Generate 5-Year Extension + Email', auto5:'📋 Generate 5-Year Commitment + Email' };
+    genBtn.textContent = lbls[typeEl.value] || '📋 Generate Variation + Email';
+  }
+  calc();
 }
 
 slides[0].classList.add('active');
 document.getElementById('progress').style.width=(1/total*100)+'%';
 calc();
 updateRenewal();
+
+function fakeDownload(btn) {
+  const orig = btn.innerHTML;
+  const origBg = btn.style.background;
+  btn.disabled = true;
+  btn.innerHTML = '⏳ Preparing document...';
+  btn.style.opacity = '0.85';
+  setTimeout(() => {
+    btn.innerHTML = '↓&nbsp; Downloading...';
+    setTimeout(() => {
+      btn.innerHTML = '✅ Downloaded successfully';
+      btn.style.background = 'var(--green)';
+      btn.style.opacity = '1';
+      setTimeout(() => {
+        btn.innerHTML = orig;
+        btn.style.background = origBg || '';
+        btn.style.opacity = '';
+        btn.disabled = false;
+      }, 1800);
+    }, 900);
+  }, 700);
+}
 </script>
 </body>
 </html>
