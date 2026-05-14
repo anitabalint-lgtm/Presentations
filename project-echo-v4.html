@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Echo — Every commercial promise remembered.</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --bg:       #fdf6ee;
+  --slide-bg: #fffcf8;
+  --text:     #1c1917;
+  --muted:    #78716c;
+  --border:   #e7e0d8;
+  --teal:     #0d9488; --teal-bg: #f0fdfa; --teal-b: #99f6e4;
+  --amber:    #b45309; --amber-bg: #fffbeb; --amber-b: #fde68a;
+  --blue:     #1d4ed8; --blue-bg:  #eff6ff; --blue-b:  #bfdbfe;
+  --green:    #15803d; --green-bg: #f0fdf4; --green-b: #bbf7d0;
+  --red:      #b91c1c; --red-bg:   #fef2f2; --red-b:   #fecaca;
+  --purple:   #7c3aed; --purple-bg:#f5f3ff; --purple-b:#ddd6fe;
+  --warm1:    #f59e0b;
+  --warm2:    #0d9488;
+}
+html,body { width:100%;height:100%;font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);overflow:hidden; }
+
+/* ── ENGINE ── */
+.deck { width:100vw;height:100vh;position:relative; }
+.slide {
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  justify-content:center;align-items:center;padding:44px 70px 44px 78px;
+  opacity:0;pointer-events:none;background:var(--bg);
+  transition:opacity .4s ease,transform .4s ease;transform:translateX(32px);
+}
+.slide.active { opacity:1;pointer-events:all;transform:translateX(0); }
+.slide.prev   { opacity:0;transform:translateX(-32px); }
+
+/* Warm left accent stripe */
+.slide::before {
+  content:'';position:absolute;left:0;top:0;bottom:0;width:5px;
+  background:linear-gradient(to bottom,var(--warm1),var(--warm2));
+  border-radius:0 2px 2px 0;
+}
+
+/* Subtle watermark */
+.slide::after {
+  content:'◎';position:absolute;bottom:22px;left:24px;
+  font-size:13px;color:rgba(180,130,80,.25);font-weight:700;letter-spacing:1px;
+  pointer-events:none;
+}
+
+/* ── CHROME ── */
+#progress { position:fixed;top:0;left:0;height:4px;background:linear-gradient(to right,var(--warm1),var(--warm2));transition:width .4s;z-index:200; }
+.snum { position:absolute;top:18px;right:28px;font-size:12px;color:var(--muted);letter-spacing:1px;font-weight:500; }
+#nav { position:fixed;bottom:22px;right:28px;display:flex;gap:10px;align-items:center;z-index:100; }
+.nb { background:var(--slide-bg);border:1px solid var(--border);color:var(--text);padding:8px 20px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:500;transition:background .2s;box-shadow:0 1px 3px rgba(0,0,0,.07); }
+.nb:hover { background:var(--bg); }
+#sc { font-size:13px;color:var(--muted);min-width:52px;text-align:center;font-weight:500; }
+
+/* ── TYPE ── */
+.tag { display:inline-block;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--teal);font-weight:700;margin-bottom:14px;background:var(--teal-bg);border:1px solid var(--teal-b);border-radius:100px;padding:4px 14px; }
+h2  { font-size:clamp(22px,2.9vw,38px);font-weight:700;line-height:1.15;color:var(--text); }
+h3  { font-size:clamp(16px,1.8vw,22px);font-weight:600;color:var(--text); }
+p   { font-size:clamp(14px,1.5vw,17px);color:var(--muted);line-height:1.7; }
+.teal   { color:var(--teal); }
+.amber  { color:var(--amber); }
+.blue   { color:var(--blue); }
+.green  { color:var(--green); }
+.red    { color:var(--red); }
+.purple { color:var(--purple); }
+.muted  { color:var(--muted); }
+.fw  { width:100%; }
+.centered { text-align:center; }
+.sp    { margin-top:22px; }
+.sp-sm { margin-top:12px; }
+.italic { font-style:italic; }
+
+/* ── WORDMARK ── */
+.wordmark { font-size:clamp(52px,9vw,96px);font-weight:900;letter-spacing:-3px;background:linear-gradient(135deg,var(--teal),var(--warm1));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text; }
+
+/* ── CARD ── */
+.card    { background:var(--slide-bg);border:1px solid var(--border);border-radius:14px;padding:20px 22px;box-shadow:0 2px 8px rgba(180,130,60,.06); }
+.card-sm { background:var(--slide-bg);border:1px solid var(--border);border-radius:10px;padding:14px 18px;box-shadow:0 1px 4px rgba(180,130,60,.05); }
+
+/* ── COL PANELS (equal 3-col) ── */
+.three-cols { display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;width:100%; }
+.two-cols   { display:grid;grid-template-columns:1fr 1fr;gap:16px;width:100%; }
+.col-panel  { border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--slide-bg);box-shadow:0 2px 6px rgba(180,130,60,.06);display:flex;flex-direction:column; }
+.col-panel .col-body { flex:1; }
+.col-head   { padding:10px 16px;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#fff; }
+.col-head.teal   { background:var(--teal); }
+.col-head.amber  { background:var(--amber); }
+.col-head.blue   { background:var(--blue); }
+.col-head.green  { background:var(--green); }
+.col-head.purple { background:var(--purple); }
+.col-body { padding:12px 14px; }
+
+/* ── CHAOS ── */
+.chaos-grid { display:grid;grid-template-columns:repeat(5,1fr);gap:10px;width:100%;margin-top:18px; }
+.chaos-item { background:var(--slide-bg);border:1px solid var(--border);border-radius:12px;padding:14px 10px;text-align:center;box-shadow:0 1px 4px rgba(180,130,60,.06); }
+.ci-icon    { font-size:26px;margin-bottom:7px; }
+.ci-label   { font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:600; }
+.ci-snippet { font-size:10px;color:#a8a29e;margin-top:7px;line-height:1.5;font-family:monospace; }
+
+/* ── QUESTION BOX ── */
+.q-box { background:linear-gradient(135deg,var(--teal-bg),var(--amber-bg));border:1.5px solid var(--teal-b);border-radius:16px;padding:26px 46px;text-align:center;margin-top:18px; }
+.q-text { font-size:clamp(20px,2.5vw,31px);font-style:italic;font-weight:400;color:var(--teal); }
+
+/* ── MINI CARDS ── */
+.mini-cards { display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;width:100%;margin-top:14px; }
+.mini-card  { background:var(--slide-bg);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;box-shadow:0 1px 4px rgba(180,130,60,.06); }
+.mc-icon  { font-size:26px;margin-bottom:8px; }
+.mc-label { font-size:15px;color:var(--muted);font-weight:500; }
+
+/* ── BULLET LIST ── */
+.blist { list-style:none; }
+.blist li { display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:15px;color:var(--text);line-height:1.5; }
+.blist li:last-child { border-bottom:none; }
+.bi { flex-shrink:0;font-size:18px;margin-top:1px; }
+
+/* ── COMPARE ── */
+.ccard { border-radius:12px;padding:18px; }
+.ccard.before { background:#fff8f8;border:1px solid #fcd5d5; }
+.ccard.after  { background:var(--green-bg);border:1px solid var(--green-b); }
+.ccard h3 { margin-bottom:10px;font-size:14px; }
+.ccard ul { list-style:none; }
+.ccard ul li { padding:5px 0;border-bottom:1px solid rgba(0,0,0,.04);font-size:13px;color:var(--muted);display:flex;gap:8px; }
+.ccard ul li:last-child { border-bottom:none; }
+
+/* ── MODE CARDS ── */
+.mode-card  { border-radius:14px;padding:26px; }
+.mode-card.sales   { background:var(--blue-bg);border:1.5px solid var(--blue-b); }
+.mode-card.renewal { background:var(--teal-bg);border:1.5px solid var(--teal-b); }
+.mode-icon  { font-size:32px;margin-bottom:10px; }
+.mode-title { font-size:20px;font-weight:700;margin-bottom:8px; }
+.mode-desc  { font-size:15px;color:var(--muted);line-height:1.65;margin-bottom:12px; }
+.mode-tags  { display:flex;flex-wrap:wrap;gap:6px; }
+.mode-tag   { font-size:12px;background:rgba(255,255,255,.8);border:1px solid var(--border);border-radius:100px;padding:4px 12px;color:var(--muted);font-weight:500; }
+
+/* ── EROW ── */
+.erow { display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px; }
+.erow:last-child { border-bottom:none; }
+.erow .lbl { color:var(--muted); }
+.erow .val { font-weight:600;color:var(--text); }
+
+/* ── ECHO UI ── */
+.echo-ui  { background:var(--slide-bg);border:1.5px solid var(--teal-b);border-radius:14px;overflow:hidden;box-shadow:0 4px 20px rgba(13,148,136,.1); }
+.echo-bar { background:var(--teal-bg);padding:11px 18px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--teal-b); }
+.dots { display:flex;gap:5px; }
+.dot { width:8px;height:8px;border-radius:50%; }
+.dr{background:#ff5f57;}.dy{background:#febc2e;}.dg{background:#28c840;}
+.elog { font-size:13px;font-weight:800;color:var(--teal);letter-spacing:1px; }
+.esearch { flex:1;background:rgba(255,255,255,.9);border:1px solid var(--border);border-radius:7px;padding:7px 13px;color:var(--text);font-size:13px;display:flex;align-items:center;gap:8px; }
+.cursor { display:inline-block;width:2px;height:13px;background:var(--teal);animation:blink 1s step-end infinite; }
+@keyframes blink { 50%{opacity:0} }
+.ebody { padding:14px; }
+.etitle { font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--teal);margin-bottom:8px;font-weight:700; }
+
+/* ── FLAGS / OPP ── */
+.flag-item { display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--border);font-size:12.5px; }
+.flag-item:last-child { border-bottom:none; }
+.conf-row  { display:flex;gap:4px;align-items:center;margin-top:6px; }
+.conf-seg  { height:6px;border-radius:3px;flex:1; }
+.opp { background:var(--green-bg);border:1px solid var(--green-b);border-radius:9px;padding:10px 14px;display:flex;align-items:center;gap:12px;margin-top:8px; }
+.opp-n { font-size:22px;font-weight:800;color:var(--green); }
+.opp-l { font-size:11px;color:var(--muted); }
+
+/* ── FORM FIELDS ── */
+.sf { margin-bottom:9px;padding-bottom:9px;border-bottom:1px solid var(--border); }
+.sf:last-child { border-bottom:none;margin-bottom:0;padding-bottom:0; }
+.sf label { font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);display:block;margin-bottom:3px;font-weight:600; }
+.sf .v   { font-size:14px;color:var(--text);font-weight:500; }
+.sf .ht  { color:var(--teal);font-weight:700; }
+.sf .ha  { color:var(--amber); }
+
+/* ── WARNING ITEMS ── */
+.w-item { display:flex;gap:9px;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--border);font-size:12.5px;line-height:1.5; }
+.w-item:last-child { border-bottom:none; }
+
+/* ── DRAFT PANELS ── */
+.draft-panel { border-radius:12px;overflow:hidden; }
+.draft-panel.tp { border:1.5px solid var(--teal-b); }
+.draft-panel.pp { border:1.5px solid var(--purple-b); }
+.draft-head { padding:9px 15px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase; }
+.draft-head.th { background:var(--teal-bg);color:var(--teal);border-bottom:1px solid var(--teal-b); }
+.draft-head.ph { background:var(--purple-bg);color:var(--purple);border-bottom:1px solid var(--purple-b); }
+.draft-body { background:var(--slide-bg);padding:14px 16px;font-size:13px;color:var(--text);line-height:1.8; }
+
+/* ── CALCULATOR ── */
+.calc-wrap   { display:flex;flex-direction:column;gap:12px;width:100%; }
+.calc-inputs { display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px; }
+.ci-group    { background:var(--slide-bg);border:1px solid var(--border);border-radius:10px;padding:14px 16px;box-shadow:0 1px 4px rgba(180,130,60,.05); }
+.ci-group label { font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);display:block;margin-bottom:7px;font-weight:600; }
+.ci-group input[type="number"] { background:transparent;border:none;color:var(--teal);font-size:22px;font-weight:800;width:100%;outline:none;font-family:inherit; }
+.ci-group input[type="number"]::-webkit-inner-spin-button,
+.ci-group input[type="number"]::-webkit-outer-spin-button { opacity:.4; }
+.disc-ctrl { display:flex;align-items:center;gap:8px; }
+.disc-ctrl button { background:var(--teal-bg);border:1px solid var(--teal-b);color:var(--teal);width:30px;height:30px;border-radius:6px;cursor:pointer;font-size:16px;font-weight:700;line-height:1; }
+.disc-ctrl input  { background:transparent;border:none;color:var(--teal);font-size:22px;font-weight:800;width:56px;outline:none;text-align:center;font-family:inherit; }
+.calc-out { display:grid;grid-template-columns:1fr 1fr;gap:12px; }
+.inv-line { display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--muted); }
+.inv-line:last-child { border-bottom:none; }
+.inv-total { font-size:14px;font-weight:700;color:var(--teal);border-top:2px solid var(--teal-b);margin-top:4px;padding-top:7px; }
+.echo-advice { border-radius:10px;padding:12px 16px;margin-top:10px; }
+
+/* ── UPLOADS ── */
+.upload-zone { border:2px dashed var(--teal-b);border-radius:10px;padding:16px;text-align:center;cursor:pointer;background:var(--teal-bg);transition:border-color .2s; }
+.upload-zone:hover { border-color:var(--teal); }
+.upload-zone p { font-size:12px;color:var(--muted);margin-top:5px; }
+.template-preview { background:var(--blue-bg);border:1px solid var(--blue-b);border-radius:9px;padding:13px 15px;font-size:12.5px;color:var(--muted);line-height:1.7;margin-top:10px; }
+.template-preview .hl { color:var(--blue);font-weight:600; }
+.dl-btn    { display:inline-flex;align-items:center;gap:8px;background:var(--teal);color:#fff;padding:10px 22px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;margin-top:10px;border:none; }
+.dl-btn-sm { display:inline-flex;align-items:center;gap:6px;background:var(--bg);border:1.5px solid var(--purple-b);color:var(--purple);padding:8px 18px;border-radius:7px;font-size:12.5px;font-weight:600;cursor:pointer;margin-top:8px; }
+
+/* ── GREEN BANNER ── */
+.green-banner { background:var(--green-bg);border:1.5px solid var(--green-b);border-radius:10px;padding:12px 18px;display:flex;align-items:center;gap:12px;margin-bottom:12px; }
+.green-banner span { font-size:14px;font-weight:600;color:var(--green); }
+
+/* ── VISION GRID ── */
+.vision-grid { display:grid;grid-template-columns:1fr 1fr 1fr;gap:13px;width:100%;margin-top:18px; }
+.vc { background:var(--slide-bg);border:1px solid var(--border);border-radius:14px;padding:20px 16px;box-shadow:0 2px 8px rgba(180,130,60,.06);text-align:center; }
+.vc-icon  { font-size:36px;margin-bottom:10px; }
+.vc-title { font-size:16px;font-weight:700;color:var(--text);margin-bottom:5px; }
+.vc-desc  { font-size:13px;color:var(--muted);line-height:1.5; }
+
+/* ── IMPACT CARDS ── */
+.impact-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:14px;width:100%;margin-top:18px; }
+.ic { background:var(--slide-bg);border:1px solid var(--border);border-radius:14px;padding:22px 18px;text-align:center;box-shadow:0 2px 8px rgba(180,130,60,.06); }
+.ic-num { font-size:clamp(28px,3.5vw,44px);font-weight:900;color:var(--teal);display:block;margin-bottom:6px;letter-spacing:-1px; }
+.ic-label { font-size:14px;color:var(--muted);line-height:1.5; }
+.ic-sub   { font-size:12px;color:var(--teal);font-weight:600;margin-top:6px; }
+
+/* ── CLOSING ── */
+.closing-q    { font-size:clamp(14px,1.6vw,19px);color:var(--muted);line-height:1.85;font-style:italic;max-width:720px;margin-top:22px;text-align:center; }
+.closing-line { font-size:clamp(20px,2.5vw,30px);color:var(--teal);font-style:italic;font-weight:300;border-top:2px solid var(--teal-b);padding-top:22px;margin-top:26px; }
+
+/* ── MODAL ── */
+#var-modal {
+  display:none;position:fixed;inset:0;background:rgba(28,25,23,.55);z-index:600;
+  align-items:center;justify-content:center;backdrop-filter:blur(5px);
+}
+#var-modal.open { display:flex; }
+.modal-box {
+  background:#fffcf8;border-radius:18px;padding:30px 34px;max-width:680px;width:92%;
+  box-shadow:0 24px 64px rgba(0,0,0,.18);max-height:88vh;overflow-y:auto;
+}
+.modal-title { font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--red);font-weight:700;margin-bottom:8px; }
+.modal-box h3 { font-size:20px;font-weight:700;margin-bottom:20px; }
+.modal-close  { background:none;border:1px solid var(--border);border-radius:8px;padding:6px 13px;cursor:pointer;color:var(--muted);font-size:13px; }
+
+/* ── SEP ── */
+hr { border:none;border-top:1px solid var(--border);margin:12px 0; }
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div class="deck">
+
+<!-- ══════════════════════════════════════
+     01 — TITLE
+══════════════════════════════════════ -->
+<div class="slide centered">
+  <div class="snum">01 / 14</div>
+  <div class="tag">Hack Week 2026</div>
+  <div class="wordmark" style="margin-top:6px;">echo</div>
+  <div style="font-size:clamp(19px,2.3vw,27px);color:var(--teal);font-style:italic;font-weight:300;margin-top:16px;">"Every commercial promise remembered."</div>
+  <div style="margin-top:32px;font-size:15px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;font-weight:500;">AI-Powered Commercial Intelligence · Sales &amp; Customer Success</div>
+</div>
+
+<!-- ══════════════════════════════════════
+     02 — THE PROBLEM
+══════════════════════════════════════ -->
+<div class="slide">
+  <div class="snum">02 / 14</div>
+  <div class="tag">The Challenge</div>
+  <h2>One question. <span class="teal">Five systems.</span> No quick answer.</h2>
+  <div class="chaos-grid">
+    <div class="chaos-item"><div class="ci-icon">🟠</div><div class="ci-label">HubSpot</div><div class="ci-snippet">NOTE: "discount discussed<br>in Q3 call — see email"</div></div>
+    <div class="chaos-item"><div class="ci-icon">📧</div><div class="ci-label">Email Thread</div><div class="ci-snippet">Re: Re: Re: Fw: Pricing<br>48 messages deep</div></div>
+    <div class="chaos-item"><div class="ci-icon">📄</div><div class="ci-label">PDF Contract</div><div class="ci-snippet">§7.2 Pricing...<br>§12 Amendment...</div></div>
+    <div class="chaos-item"><div class="ci-icon">💬</div><div class="ci-label">Slack</div><div class="ci-snippet">"just to clarify the<br>discount is temp btw"</div></div>
+    <div class="chaos-item"><div class="ci-icon">📊</div><div class="ci-label">Pricing Sheet</div><div class="ci-snippet">v3_FINAL_v2<br>_UPDATED_USE_THIS</div></div>
+  </div>
+  <div class="sp">
+    <p class="centered" style="font-size:16px;">Answering <em>one</em> renewal question means manually pulling together context from <strong style="color:var(--teal);">5 disconnected systems.</strong> Every single time.</p>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     03 — THE QUESTION
+══════════════════════════════════════ -->
+<div class="slide">
+  <div class="snum">03 / 14</div>
+  <div class="tag">The Moment of Truth</div>
+  <h2>The question every CS manager <span class="teal">needs to answer confidently.</span></h2>
+  <div class="q-box">
+    <div class="q-text">"Can this customer's discount continue next year?"</div>
+  </div>
+  <div class="mini-cards">
+    <div class="mini-card"><div class="mc-icon">🔍</div><div class="mc-label">Hard to answer quickly</div></div>
+    <div class="mini-card"><div class="mc-icon">📦</div><div class="mc-label">Context scattered across systems</div></div>
+    <div class="mini-card"><div class="mc-icon">🎯</div><div class="mc-label">Opportunity to do this better</div></div>
+  </div>
+  <div class="sp-sm">
+    <p class="centered italic" style="font-size:16px;color:var(--text);">We can be smarter than this. The answer exists — Echo finds it <strong class="teal">instantly.</strong></p>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     04 — WHY THIS MATTERS (merged)
+══════════════════════════════════════ -->
+<div class="slide">
+  <div class="snum">04 / 14</div>
+  <div class="tag">The Opportunity</div>
+  <h2>Commercial clarity at every stage — <span class="teal">this is what Echo makes possible.</span></h2>
+  <div class="two-cols sp-sm">
+    <div class="card">
+      <div class="etitle" style="color:var(--amber);margin-bottom:12px;">Where we can strengthen</div>
+      <ul class="blist">
+        <li><span class="bi">📈</span><div><strong>Revenue confidence</strong> <span class="muted">— ensure every pricing agreement is honoured as intended</span></div></li>
+        <li><span class="bi">🛡️</span><div><strong>Commercial protection</strong> <span class="muted">— verbal commitments documented before they become questions</span></div></li>
+        <li><span class="bi">⚡</span><div><strong>Renewal speed</strong> <span class="muted">— transform hours of research into instant intelligence</span></div></li>
+        <li><span class="bi">🧠</span><div><strong>Institutional knowledge</strong> <span class="muted">— commercial context lives in the system, not in individuals</span></div></li>
+      </ul>
+    </div>
+    <div>
+      <div class="card ccard before" style="margin-bottom:12px;">
+        <h3 style="color:var(--amber);font-size:14px;margin-bottom:9px;">Today: knowledge depends on people</h3>
+        <ul>
+          <li><span>→</span> Renewal slows if key person is unavailable</li>
+          <li><span>→</span> Commercial context held informally</li>
+          <li><span>→</span> Inconsistency between teams</li>
+        </ul>
+      </div>
+      <div class="card ccard after">
+        <h3 style="color:var(--green);font-size:14px;margin-bottom:9px;">With Echo: knowledge belongs to the organisation</h3>
+        <ul>
+          <li><span>✅</span> Anyone can answer any renewal question</li>
+          <li><span>✅</span> Full context available in seconds</li>
+          <li><span>✅</span> Consistent, accurate, legally sound</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="sp-sm">
+    <p class="centered italic" style="font-size:16px;color:var(--text);">Echo converts <span class="amber">fragmented personal knowledge</span> into <span class="teal">searchable organisational intelligence.</span></p>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     05 — TWO MODES
+══════════════════════════════════════ -->
+<div class="slide">
+  <div class="snum">05 / 14</div>
+  <div class="tag">The Solution</div>
+  <h2 class="centered">Project Echo. <span class="teal">Two modes. One source of truth.</span></h2>
+  <div class="two-cols sp">
+    <div class="mode-card sales">
+      <div class="mode-icon">🤝</div>
+      <div class="mode-title blue">Sales Mode</div>
+      <p class="mode-desc">Win the deal right from day one. Echo captures commercial terms, checks contract language, and drafts clear confirmation emails — so renewal conversations start from a position of strength.</p>
+      <div class="mode-tags">
+        <span class="mode-tag">Pricing calculator</span>
+        <span class="mode-tag">Contract language checks</span>
+        <span class="mode-tag">Safe confirmation email</span>
+        <span class="mode-tag">Deal capture before agreement is sent</span>
+      </div>
+    </div>
+    <div class="mode-card renewal">
+      <div class="mode-icon">🔄</div>
+      <div class="mode-title teal">Renewal Mode</div>
+      <p class="mode-desc">Full commercial intelligence at every renewal. Echo reads contracts, emails, and CRM — surfaces pricing history, calculates scenarios, interprets renewal terms, and generates variations where needed.</p>
+      <div class="mode-tags">
+        <span class="mode-tag">Commercial intelligence</span>
+        <span class="mode-tag">Live pricing calculator</span>
+        <span class="mode-tag">Renewal term interpretation</span>
+        <span class="mode-tag">Variation &amp; template generation</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     06 — ECHO SALES: DEAL CAPTURE
+══════════════════════════════════════ -->
+<div class="slide">
+  <div class="snum">06 / 14</div>
+  <div class="tag">Echo · Sales Mode</div>
+  <h2>Before the agreement goes out — <span class="blue">Echo reviews everything.</span></h2>
+  <p class="italic sp-sm" style="font-size:14px;color:var(--muted);margin-bottom:10px;">Sales enters deal details into Echo before sending the contract or agreement — ensuring everything is in order before it leaves your hands.</p>
+  <div class="three-cols">
+    <div class="col-panel">
+      <div class="col-head blue">Deal Details</div>
+      <div class="col-body">
+        <div class="sf"><label>Customer</label><div class="v">ELTE Budapest</div></div>
+        <div class="sf"><label>Contract start</label><div class="v">1 Sep 2026</div></div>
+        <div class="sf"><label>Standard rate (£/life)</label><div class="v ht">£2.625</div></div>
+        <div class="sf"><label>Number of lives</label><div class="v">8,500</div></div>
+        <div class="sf"><label>Introductory discount</label><div class="v ha">25% Year 1 (Education Sector)</div></div>
+        <div class="sf"><label>Rationale</label><div class="v" style="font-size:13px;">Education sector partnership</div></div>
+        <div class="sf"><label>Effective Year 1 rate</label><div class="v ht" style="font-size:13px;">£1.969/life → £16,737 p.a.</div></div>
+      </div>
+    </div>
+    <div class="col-panel">
+      <div class="col-head amber">Contract Review Points</div>
+      <div class="col-body">
+        <div class="w-item" style="color:var(--amber);"><span>⚡</span><div><strong>Clause 4.2</strong> reads "payment upfront" → recommend "annual payment in advance" for clarity on billing cycle. <em style="font-size:11px;color:var(--muted);">Keeps subscription model consistent.</em></div></div>
+        <div class="w-item" style="color:var(--amber);"><span>⚡</span><div><strong>Clause 7.1</strong> — strengthen by adding: <em>"The education sector discount of 25% applies to Year 1 only. Standard rate applies from Year 2 unless otherwise agreed in writing."</em></div></div>
+        <div class="w-item" style="color:var(--green);"><span>✅</span><span>Service description — present and complete</span></div>
+        <div class="w-item" style="color:var(--green);"><span>✅</span><span>Payment terms structure — present</span></div>
+      </div>
+    </div>
+    <div class="col-panel">
+      <div class="col-head green">Pre-Send Checklist</div>
+      <div class="col-body">
+        <div class="w-item" style="color:var(--green);"><span>✅</span> Pricing confirmed</div>
+        <div class="w-item" style="color:var(--green);"><span>✅</span> Discount rationale documented</div>
+        <div class="w-item" style="color:var(--green);"><span>✅</span> Contract clauses strengthened</div>
+        <div class="w-item" style="color:var(--amber);"><span>⚡</span> Update clauses 4.2 and 7.1 before sending</div>
+        <div class="w-item" style="color:var(--green);"><span>✅</span> Confirmation email ready</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     07 — ECHO DRAFTS (email + clause + sales download)
+══════════════════════════════════════ -->
+<div class="slide">
+  <div class="snum">07 / 14</div>
+  <div class="tag">Echo · Drafts</div>
+  <h2>One intelligence. <span class="teal">Two outputs.</span></h2>
+  <p class="sp-sm" style="font-size:14px;color:var(--muted);margin-bottom:12px;">Echo drafts the confirmation email <em>and</em> the contract clause — both from the same commercial terms. Same deal, two registers, both legally sound.</p>
+  <div class="two-cols">
+    <div class="draft-panel tp">
+      <div class="draft-head th">Confirmation Email — ELTE Budapest</div>
+      <div class="draft-body">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:10px;border-bottom:1px solid var(--border);padding-bottom:8px;"><strong>To:</strong> procurement@elte.hu &nbsp;|&nbsp; <strong>Subject:</strong> Confirmed commercial terms — ELTE Budapest</div>
+        Dear [Name],<br><br>
+        I am pleased to confirm the agreed terms for ELTE Budapest. The introductory rate of <strong style="color:var(--teal);">£1.969 per life</strong> reflects a <strong style="color:var(--teal);">25% education sector discount</strong> from our standard rate of £2.625, applicable to 8,500 lives for Year 1.<br><br>
+        This introductory discount applies to <strong>Year 1 only.</strong> Standard rate card pricing applies from renewal unless otherwise agreed in writing, with a minimum 60-day notice period for any pricing changes.<br><br>
+        Annual contract value for Year 1: <strong style="color:var(--teal);">£16,737.</strong> Please find the signed agreement attached.
+      </div>
+    </div>
+    <div>
+      <div class="draft-panel pp" style="margin-bottom:10px;">
+        <div class="draft-head ph">Contract Clause — Section 2: Service Fees</div>
+        <div class="draft-body" style="font-size:12px;">
+          <strong>2.1</strong> The Client shall pay TalkLife Ltd an annual fee at <strong>£2.625 per Covered Life</strong> based on lives confirmed at the Effective Date.<br><br>
+          <strong>2.2</strong> For the Initial Subscription Term only, an education sector discount of 25% applies: effective rate <strong style="color:var(--purple);">£1.969/life</strong>, annual fee <strong style="color:var(--purple);">£16,737</strong> (ex. VAT).<br><br>
+          <strong>2.3</strong> The discount in Clause 2.2 expires at the end of the Initial Subscription Term. Standard pricing applies from Year 2 unless agreed in writing.<br><br>
+          <strong>2.4</strong> Annual fees are subject to review; any increase shall not exceed <strong>RPI+2%</strong>, subject to 60 days' written notice.
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;background:var(--purple-bg);border:1px solid var(--purple-b);border-radius:10px;padding:12px 16px;">
+        <div>
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--purple);font-weight:700;margin-bottom:3px;">Sales — Contract Amendment</div>
+          <div style="font-size:13px;color:var(--muted);">Payment terms differ from standard agreement?<br>Upload your template — Echo completes it.</div>
+        </div>
+        <button class="dl-btn-sm">📋 Generate &amp; Download</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     08 — CLEAN STATE (ELTE Budapest)
+══════════════════════════════════════ -->
+<div class="slide">
+  <div class="snum">08 / 14</div>
+  <div class="tag">Echo Renewal · Best Practice</div>
+  <h2>When Echo is in place from day one — <span class="green">renewal is effortless.</span></h2>
+  <div class="fw sp-sm">
+    <div class="green-banner">
+      <span style="font-size:20px;">✅</span>
+      <span>ELTE Budapest — All commercial terms fully documented. 4 sources cross-referenced. No review points.</span>
+    </div>
+    <div class="three-cols">
+      <div class="card">
+        <div class="etitle" style="color:var(--teal);">Pricing Summary</div>
+        <div class="erow"><span class="lbl">Standard rate</span><span class="val teal">£2.625/life</span></div>
+        <div class="erow"><span class="lbl">Lives</span><span class="val">8,500</span></div>
+        <div class="erow"><span class="lbl">Year 2 ACV</span><span class="val green">£22,313</span></div>
+        <div class="erow"><span class="lbl">Year 1 discount</span><span class="val green">Expired — confirmed in Clause 2.3</span></div>
+        <div class="erow"><span class="lbl">Uplift cap</span><span class="val">RPI+2% per Clause 2.4</span></div>
+      </div>
+      <div class="card">
+        <div class="etitle" style="color:var(--teal);">Renewal Terms</div>
+        <div class="erow"><span class="lbl">Renewal type</span><span class="val green">Auto-renew ✓</span></div>
+        <div class="erow"><span class="lbl">Notice period</span><span class="val">60 days — Clause 5.1</span></div>
+        <div class="erow"><span class="lbl">Contract ref</span><span class="val">Clause 2.4</span></div>
+        <div class="erow"><span class="lbl">Action needed</span><span class="val green">Send renewal email only</span></div>
+      </div>
+      <div class="card" style="background:var(--green-bg);border-color:var(--green-b);">
+        <div class="etitle" style="color:var(--green);">Echo Message</div>
+        <p style="font-size:14px;color:var(--green);line-height:1.65;font-weight:500;">Renewal is straightforward. Discount expiry clearly documented at point of sale. No variation required for standard uplift. Echo renewal email is ready to send.</p>
+      </div>
+    </div>
+    <div class="sp-sm" style="text-align:center;">
+      <span style="display:inline-block;background:var(--amber-bg);border:1px solid var(--amber-b);border-radius:100px;padding:6px 20px;font-size:13px;color:var(--amber);font-weight:500;">
+        This is what renewal looks like when the groundwork was done right. Now let's look at what Echo can help us improve.
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     09 — COMMERCIAL SUMMARY (Uni of Passau)
+══════════════════════════════════════ -->
+<div class="slide">
+  <div class="snum">09 / 14</div>
+  <div class="tag">Echo Renewal · Intelligence</div>
+  <h2>University of Passau renewal — <span class="teal">Echo's full picture.</span></h2>
+  <div class="echo-ui fw sp-sm">
+    <div class="echo-bar">
+      <div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div>
+      <div class="elog">◎ PROJECT ECHO</div>
+      <div class="esearch"><span>🔍</span><span class="muted">What can we charge <strong style="color:var(--text);">University of Passau</strong> at renewal?</span><span class="cursor"></span></div>
+    </div>
+    <div class="ebody three-cols" style="padding:12px;">
+      <div class="col-panel">
+        <div class="col-head teal">Commercial Summary</div>
+        <div class="col-body" style="padding:9px 12px;">
+          <div class="erow"><span class="lbl">Current price</span><span class="val teal">£2.10/life</span></div>
+          <div class="erow"><span class="lbl">Covered lives</span><span class="val">18,400</span></div>
+          <div class="erow"><span class="lbl">Annual value</span><span class="val">£38,640</span></div>
+          <div class="erow"><span class="lbl">Discount applied</span><span class="val amber">20% (temporary)</span></div>
+          <div class="erow"><span class="lbl">Rationale</span><span class="val" style="font-size:12px;">"Financial hardship"</span></div>
+          <div class="erow"><span class="lbl">Discount period</span><span class="val amber">Year 1 — to be confirmed</span></div>
+          <div class="erow"><span class="lbl">Standard rate</span><span class="val">£2.625/life</span></div>
+          <div class="erow"><span class="lbl">Renewal opportunity</span><span class="val green">+£12,400 ARR at £2.50</span></div>
+        </div>
+      </div>
+      <div class="col-panel">
+        <div class="col-head amber">Echo Quality Review</div>
+        <div class="col-body" style="padding:9px 12px;">
+          <div class="flag-item"><span>⚡</span><span>Opportunity to formally document discount end date for full commercial clarity</span></div>
+          <div class="flag-item"><span>⚡</span><span>Sales email references gradual uplift — worth capturing this expectation in writing</span></div>
+          <div class="flag-item"><span>⚡</span><span>Adding a price uplift mechanism would strengthen future renewal conversations</span></div>
+          <div class="flag-item"><span>ℹ️</span><span>"Mutual agreement" renewal clause — Echo recommends written confirmation from both parties</span></div>
+          <div style="margin-top:10px;">
+            <div class="etitle" style="color:var(--amber);">AI Confidence</div>
+            <div class="conf-row">
+              <div class="conf-seg" style="background:var(--teal);"></div>
+              <div class="conf-seg" style="background:var(--teal);"></div>
+              <div class="conf-seg" style="background:var(--teal);"></div>
+              <div class="conf-seg" style="background:var(--teal);opacity:.4;"></div>
+              <div class="conf-seg" style="background:var(--border);"></div>
+              <span style="font-size:11px;color:var(--muted);margin-left:8px;">High — 4 sources</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-panel">
+        <div class="col-head blue">Renewal Term &amp; Context</div>
+        <div class="col-body" style="padding:9px 12px;font-size:12px;">
+          <div class="etitle" style="color:var(--blue);">Contract Clause</div>
+          <div style="background:var(--bg);border-radius:6px;padding:7px 10px;font-style:italic;color:var(--muted);margin-bottom:9px;font-size:12px;line-height:1.5;">"This Agreement shall renew annually by mutual agreement unless either party provides 60 days written notice..."</div>
+          <div class="etitle" style="color:var(--blue);">Echo Interpretation</div>
+          <p style="color:var(--text);font-size:12px;margin-bottom:9px;line-height:1.5;">Mutual agreement clause — renewal requires written confirmation from both parties. Echo recommends formalising in writing.</p>
+          <div class="etitle" style="color:var(--blue);">Customer Context</div>
+          <p style="font-size:12px;color:var(--muted);margin-bottom:8px;">📧 Email sentiment: Cooperative — 3 positive responses, last 90 days</p>
+          <div style="background:var(--blue-bg);border:1px solid var(--blue-b);border-radius:6px;padding:8px 10px;font-size:12px;color:var(--blue);line-height:1.5;"><strong>Echo recommendation:</strong> For pricing change — signed variation (strongest protection). For renewal confirmation — formal letter referencing this agreement is sufficient given cooperative relationship.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     10 — CALCULATOR (with variation modal trigger)
+══════════════════════════════════════ -->
+<div class="slide">
+  <div class="snum">10 / 14</div>
+  <div class="tag">Echo · Pricing Calculator</div>
+  <h2>Work out your offer first. <span class="teal">Then confirm the steps.</span></h2>
+  <p class="italic sp-sm" style="font-size:14px;color:var(--muted);margin-bottom:12px;">Decide what you want to offer before confirming next steps — if a variation is needed, Echo generates it here.</p>
+  <div class="calc-wrap">
+    <div class="calc-inputs">
+      <div class="ci-group"><label>Standard rate (£/life)</label><input type="number" id="inp-ppl" value="2.625" step="0.001" min="0" oninput="calc()"></div>
+      <div class="ci-group"><label>Number of lives</label><input type="number" id="inp-lives" value="18400" step="100" min="0" oninput="calc()"></div>
+      <div class="ci-group"><label>Renewal discount (%)</label>
+        <div class="disc-ctrl">
+          <button onclick="adj(-5)">−</button>
+          <input type="number" id="inp-disc" value="0" min="0" max="100" step="1" oninput="calc()">
+          <button onclick="adj(5)">+</button>
+        </div>
+      </div>
+    </div>
+    <div class="calc-out">
+      <div class="card">
+        <div class="etitle">Renewal Summary</div>
+        <div class="erow"><span class="lbl">Gross annual value</span><span class="val" id="out-gross">£48,300.00</span></div>
+        <div class="erow"><span class="lbl">Discount amount</span><span class="val red" id="out-disc-amt">£0.00</span></div>
+        <div class="erow"><span class="lbl">Net annual value</span><span class="val teal" id="out-net">£48,300.00</span></div>
+        <div class="erow"><span class="lbl">Monthly invoice</span><span class="val" id="out-monthly">£4,025.00</span></div>
+        <div class="erow"><span class="lbl">Effective price / life</span><span class="val" id="out-ppl">£2.625</span></div>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:10px;">
+          <div class="etitle">Invoice Line Items</div>
+          <div class="inv-line"><span id="inv-svc">Mental health support — 18,400 lives × £2.625</span><span id="inv-gross-val">£48,300.00</span></div>
+          <div class="inv-line" id="inv-disc-line" style="display:none;color:var(--amber);"><span id="inv-disc-lbl">Renewal discount (0%)</span><span id="inv-disc-val">-£0.00</span></div>
+          <div class="inv-line inv-total"><span>Annual total</span><span id="inv-total">£48,300.00</span></div>
+          <div class="inv-line" style="color:var(--muted);"><span>Monthly instalment</span><span id="inv-monthly-2">£4,025.00</span></div>
+        </div>
+        <div class="echo-advice card" id="echo-advice-box">
+          <div class="etitle">Echo Guidance</div>
+          <div id="echo-comment"></div>
+          <div id="var-trigger" style="display:none;margin-top:10px;">
+            <button onclick="openModal()" style="background:var(--teal);color:#fff;border:none;padding:9px 20px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:8px;width:100%;justify-content:center;">📋 Upload contracts &amp; generate variation now</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     11 — VARIATION & TEMPLATE
+══════════════════════════════════════ -->
+<div class="slide">
+  <div class="snum">11 / 14</div>
+  <div class="tag">Echo · Variation &amp; Governance</div>
+  <h2>Terms changed? <span class="teal">Echo generates the paperwork.</span></h2>
+  <p class="sp-sm" style="font-size:14px;color:var(--muted);margin-bottom:12px;">Pricing, subscription term, contract duration, payment structure, or termination conditions — any change may need a formal variation. Echo handles it.</p>
+  <div class="two-cols">
+    <div>
+      <div class="card-sm" style="margin-bottom:10px;">
+        <div class="etitle" style="color:var(--text);margin-bottom:8px;">What triggers a variation</div>
+        <ul class="blist" style="font-size:13px;">
+          <li><span class="bi" style="font-size:14px;">📝</span>Price change from the original contract terms</li>
+          <li><span class="bi" style="font-size:14px;">📝</span>Renewal of a fixed-term contract (not auto-renew)</li>
+          <li><span class="bi" style="font-size:14px;">📝</span>Customer requesting a 5-year term with termination clause + refund schedule</li>
+          <li><span class="bi" style="font-size:14px;">📝</span>Payment structure change (e.g. quarterly instead of annual)</li>
+          <li><span class="bi" style="font-size:14px;">📝</span>Addition of new services or a change to covered-life thresholds</li>
+        </ul>
+      </div>
+      <div class="card-sm" style="background:var(--green-bg);border-color:var(--green-b);">
+        <div class="etitle" style="color:var(--green);margin-bottom:8px;">What the variation must include</div>
+        <ul class="blist" style="font-size:13px;">
+          <li><span>✅</span> Updated price per life and effective date</li>
+          <li><span>✅</span> Confirmation of any discount expiry</li>
+          <li><span>✅</span> Revised annual contract value</li>
+          <li><span>✅</span> Confirmation all other terms remain unchanged</li>
+          <li><span>✅</span> Signature block for both parties</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <div class="upload-zone" style="margin-bottom:10px;">
+        <div style="font-size:26px;">📤</div>
+        <div style="font-size:14px;font-weight:700;color:var(--teal);margin-top:8px;">Upload Company Template</div>
+        <p>Drop your standard variation agreement — Echo completes the required fields automatically.</p>
+      </div>
+      <div class="template-preview" style="margin-bottom:10px;">
+        <div style="font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--blue);margin-bottom:7px;font-weight:700;">Echo — Generated Variation Text</div>
+        "This Variation Agreement, dated <span class="hl">15 June 2026</span>, amends the Service Agreement between TalkLife Ltd and <span class="hl">University of Passau</span>. With effect from <span class="hl">1 July 2026</span>, the price per covered life shall be revised to <span class="hl">£2.50</span>. The temporary hardship discount granted in Year 1 is hereby confirmed as expired. All other terms of the original Agreement remain in full force."
+      </div>
+      <button class="dl-btn" style="width:100%;justify-content:center;">⬇ Download for Signature</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     12 — THE ECHO ADVANTAGE (new)
+══════════════════════════════════════ -->
+<div class="slide">
+  <div class="snum">12 / 14</div>
+  <div class="tag">The Echo Advantage</div>
+  <h2>From hours to seconds. <span class="teal">From onboarding to impact — from day one.</span></h2>
+  <div class="impact-grid">
+    <div class="ic">
+      <span class="ic-num">45 min<br><span style="font-size:20px;color:var(--muted);">→</span><br>&lt; 1 min</span>
+      <div class="ic-label">Per renewal query — manual research replaced by instant commercial intelligence</div>
+    </div>
+    <div class="ic">
+      <span class="ic-num">100</span>
+      <div class="ic-label">Contracts reviewed and summarised in under 2 hours — at scale, on demand</div>
+      <div class="ic-sub">Audit-ready in an afternoon</div>
+    </div>
+    <div class="ic">
+      <span class="ic-num">Day 1</span>
+      <div class="ic-label">New CS and Sales team members fully operational — no months of shadowing or digging</div>
+      <div class="ic-sub">Open Echo. Start contributing.</div>
+    </div>
+  </div>
+  <div class="sp-sm" style="width:100%;">
+    <div class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:18px 22px;">
+      <div>
+        <div class="etitle" style="color:var(--amber);margin-bottom:10px;">Without Echo — new starter experience</div>
+        <ul class="blist" style="font-size:13px;">
+          <li><span class="bi" style="font-size:14px;">→</span> Months of shadowing colleagues to learn account history</li>
+          <li><span class="bi" style="font-size:14px;">→</span> Digging through old contracts, emails, and spreadsheets</li>
+          <li><span class="bi" style="font-size:14px;">→</span> Risk of inconsistent or incomplete information</li>
+        </ul>
+      </div>
+      <div>
+        <div class="etitle" style="color:var(--teal);margin-bottom:10px;">With Echo — new starter experience</div>
+        <ul class="blist" style="font-size:13px;">
+          <li><span>✅</span> Complete account intelligence available from day one</li>
+          <li><span>✅</span> Focus on client engagement, new markets, and growth</li>
+          <li><span>✅</span> Commercial error rate approaches zero — for every team member</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     13 — FUTURE VISION (updated)
+══════════════════════════════════════ -->
+<div class="slide">
+  <div class="snum">13 / 14</div>
+  <div class="tag">What's Next</div>
+  <h2 class="centered">Echo today is the foundation. <span class="teal">Here's where it goes.</span></h2>
+  <div class="vision-grid">
+    <div class="vc">
+      <div class="vc-icon">🎙️</div>
+      <div class="vc-title">Voice Recording</div>
+      <div class="vc-desc">Switch on to record verbal conversations — commitments auto-converted to structured commercial records</div>
+    </div>
+    <div class="vc">
+      <div class="vc-icon">🔄</div>
+      <div class="vc-title">HubSpot Auto-Update</div>
+      <div class="vc-desc">Every Echo interaction automatically synced — CRM always reflects the latest commercial picture</div>
+    </div>
+    <div class="vc">
+      <div class="vc-icon">🔍</div>
+      <div class="vc-title">Smart Document Search</div>
+      <div class="vc-desc">Search and retrieve across all contracts, emails, and notes by client, clause, date, or term</div>
+    </div>
+    <div class="vc">
+      <div class="vc-icon">📁</div>
+      <div class="vc-title">Intelligent Filing</div>
+      <div class="vc-desc">Contracts and variations automatically categorised, tagged, and filed — no manual organisation</div>
+    </div>
+    <div class="vc">
+      <div class="vc-icon">📊</div>
+      <div class="vc-title">Finance Reports</div>
+      <div class="vc-desc">On-demand revenue summaries, billing forecasts, and renewal pipelines for the finance team</div>
+    </div>
+    <div class="vc">
+      <div class="vc-icon">🕐</div>
+      <div class="vc-title">Commercial Timeline</div>
+      <div class="vc-desc">Full visual history of every pricing change, promise, and agreement — per client, per year</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     14 — CLOSING
+══════════════════════════════════════ -->
+<div class="slide centered">
+  <div class="snum">14 / 14</div>
+  <div class="wordmark">echo</div>
+  <div class="closing-q">
+    "Right now, our commercial memory lives in scattered notes and individual employees.<br><br>
+    Project Echo turns that fragmented knowledge into a searchable, intelligent system — one that captures commercial intent at the point of sale, governs it through every renewal, and ensures every promise is remembered. Permanently."
+  </div>
+  <div class="closing-line">"Every commercial promise remembered."</div>
+</div>
+
+</div><!-- /deck -->
+
+<!-- ── VARIATION MODAL ── -->
+<div id="var-modal">
+  <div class="modal-box">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;">
+      <div>
+        <div class="modal-title">Echo — Variation Required</div>
+        <h3>Generate Contract Variation</h3>
+        <p style="font-size:13px;margin-top:6px;">Upload the client's existing contract and your company's variation template. Echo will complete the required fields and prepare a download-ready document.</p>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕ Close</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+      <div class="upload-zone">
+        <div style="font-size:26px;">📄</div>
+        <div style="font-size:13px;font-weight:700;color:var(--teal);margin-top:6px;">Client Contract</div>
+        <p>Upload the existing signed agreement</p>
+      </div>
+      <div class="upload-zone">
+        <div style="font-size:26px;">📋</div>
+        <div style="font-size:13px;font-weight:700;color:var(--teal);margin-top:6px;">Company Template</div>
+        <p>Upload your variation agreement template</p>
+      </div>
+    </div>
+    <div class="template-preview" style="margin-bottom:14px;">
+      <div style="font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--blue);margin-bottom:8px;font-weight:700;">Echo — Generated Variation</div>
+      "This Variation Agreement, dated <span class="hl">15 June 2026</span>, amends the Service Agreement between TalkLife Ltd and <span class="hl" id="modal-client">University of Passau</span>. With effect from 1 July 2026, the price per covered life shall be revised to <span class="hl" id="modal-rate">£2.625</span>. Any previously agreed temporary discount is hereby confirmed as expired. All other terms of the original Agreement remain in full force and effect."
+    </div>
+    <button class="dl-btn" style="width:100%;justify-content:center;font-size:14px;padding:12px;">⬇ Download Variation for Signature</button>
+  </div>
+</div>
+
+<!-- ── NAV ── -->
+<div id="nav">
+  <button class="nb" onclick="go(-1)">← Prev</button>
+  <span id="sc">1 / 14</span>
+  <button class="nb" onclick="go(1)">Next →</button>
+</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const total  = slides.length;
+let cur = 0;
+
+function show(n) {
+  slides[cur].classList.remove('active');
+  slides[cur].classList.add('prev');
+  setTimeout(() => slides[cur].classList.remove('prev'), 500);
+  cur = (n + total) % total;
+  slides[cur].classList.add('active');
+  document.getElementById('sc').textContent = (cur+1) + ' / ' + total;
+  document.getElementById('progress').style.width = ((cur+1)/total*100) + '%';
+}
+function go(d) { show(cur + d); }
+
+document.addEventListener('keydown', e => {
+  if (['ArrowRight','ArrowDown',' '].includes(e.key)) { e.preventDefault(); go(1); }
+  if (['ArrowLeft','ArrowUp'].includes(e.key))         { e.preventDefault(); go(-1); }
+  if (e.key === 'Escape') closeModal();
+});
+let tx = 0;
+document.addEventListener('touchstart', e => { tx = e.touches[0].clientX; });
+document.addEventListener('touchend',   e => { const dx = e.changedTouches[0].clientX - tx; if(Math.abs(dx)>50) go(dx<0?1:-1); });
+
+// ── MODAL ──
+function openModal() {
+  const ppl  = parseFloat(document.getElementById('inp-ppl').value) || 2.625;
+  document.getElementById('modal-rate').textContent = '£' + ppl.toFixed(3);
+  document.getElementById('var-modal').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('var-modal').classList.remove('open');
+}
+
+// ── CALCULATOR ──
+function fmt(n)    { return '£' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,','); }
+function fmtPPL(n) { return '£' + n.toFixed(3); }
+
+function adj(d) {
+  const el = document.getElementById('inp-disc');
+  let v = Math.max(0, Math.min(100, (parseFloat(el.value)||0) + d));
+  el.value = v; calc();
+}
+
+function calc() {
+  const ppl   = parseFloat(document.getElementById('inp-ppl').value)   || 0;
+  const lives = parseInt(document.getElementById('inp-lives').value)    || 0;
+  const disc  = parseFloat(document.getElementById('inp-disc').value)   || 0;
+
+  const gross   = ppl * lives;
+  const discAmt = gross * disc / 100;
+  const net     = gross - discAmt;
+  const monthly = net / 12;
+  const effPpl  = ppl * (1 - disc/100);
+
+  document.getElementById('out-gross').textContent     = fmt(gross);
+  document.getElementById('out-disc-amt').textContent  = fmt(discAmt);
+  document.getElementById('out-net').textContent       = fmt(net);
+  document.getElementById('out-monthly').textContent   = fmt(monthly);
+  document.getElementById('out-ppl').textContent       = fmtPPL(effPpl);
+  document.getElementById('inv-svc').textContent       = 'Mental health support — ' + lives.toLocaleString() + ' lives × ' + fmtPPL(ppl);
+  document.getElementById('inv-gross-val').textContent = fmt(gross);
+  document.getElementById('inv-total').textContent     = fmt(net);
+  document.getElementById('inv-monthly-2').textContent = fmt(monthly);
+
+  const dl = document.getElementById('inv-disc-line');
+  if (disc > 0) {
+    dl.style.display = 'flex';
+    document.getElementById('inv-disc-lbl').textContent = 'Renewal discount (' + disc + '%)';
+    document.getElementById('inv-disc-val').textContent = '-' + fmt(discAmt);
+  } else {
+    dl.style.display = 'none';
+  }
+
+  const c      = document.getElementById('echo-comment');
+  const box    = document.getElementById('echo-advice-box');
+  const vtrig  = document.getElementById('var-trigger');
+
+  if (disc === 0) {
+    c.textContent = 'Standard rate applied. No discount on this renewal. Invoice shows the full rate with no deductions. No variation required.';
+    c.style.color = 'var(--green)';
+    box.style.background = 'var(--green-bg)';
+    box.style.border = '1px solid var(--green-b)';
+    vtrig.style.display = 'none';
+  } else if (disc <= 10) {
+    c.textContent = 'Commercially sound discount (≤10%). Document the rationale in the renewal email. If this differs from the original contract, a signed variation is recommended.';
+    c.style.color = 'var(--muted)';
+    box.style.background = 'var(--bg)';
+    box.style.border = '1px solid var(--border)';
+    vtrig.style.display = 'none';
+  } else if (disc <= 20) {
+    c.textContent = 'Moderate discount — in line with the historical rate. Confirm the duration is clearly stated in the renewal communication. A variation agreement should be signed to document the updated terms.';
+    c.style.color = 'var(--amber)';
+    box.style.background = 'var(--amber-bg)';
+    box.style.border = '1px solid var(--amber-b)';
+    vtrig.style.display = 'block';
+  } else {
+    c.textContent = 'Discount above 20% — a formal commercial rationale is needed before proceeding. A contract variation is required. Use the button below to upload the client contract and company template, and Echo will generate the variation document.';
+    c.style.color = 'var(--red)';
+    box.style.background = 'var(--red-bg)';
+    box.style.border = '1px solid var(--red-b)';
+    vtrig.style.display = 'block';
+  }
+}
+
+// Init
+slides[0].classList.add('active');
+document.getElementById('progress').style.width = (1/total*100) + '%';
+calc();
+</script>
+</body>
+</html>
